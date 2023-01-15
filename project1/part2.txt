@@ -24,7 +24,8 @@ The command is uname -r ; The output is 5.15.0-58-generic .
 
 9. What is the command to list all files in the /bin/ directory whose filename starts with the string ch? What is the output of running that command? Note, the command must work regardless of the current working directory.
 find /bin/ -type f -name "ch*"
-The output: /bin/chage
+The output: 
+/bin/chage
 /bin/choom
 /bin/chattr
 /bin/chacl
