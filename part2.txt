@@ -23,8 +23,27 @@ The command is echo $SHELL or printenv SHELL ;  The output is /bin/bash .
 The command is uname -r ; The output is 5.15.0-58-generic .
 
 9. What is the command to list all files in the /bin/ directory whose filename starts with the string ch? What is the output of running that command? Note, the command must work regardless of the current working directory.
+find /bin/ -type f -name "ch*"
+The output: /bin/chage
+/bin/choom
+/bin/chattr
+/bin/chacl
+/bin/chgrp
+/bin/chrt
+/bin/chcon
+/bin/chardetect
+/bin/chsh
+/bin/chfn
+/bin/cheese
+/bin/chmod
+/bin/chown
+/bin/check-language-support
+/bin/chvt
 
 10. What is the command to count the number of files in your home directory? What is the output of running that command? Note that you should include hidden files in your count but exclude any subdirectories. Also, you should use the tilde character (~) to specify the user’s home directory.
+find ~ -maxdepth 1 -type f | wc -l
+Output: 8
 
 11. What is the command to search the current directory and all subdirectories for C source code files containing the pattern int i? The command should output only the filenames for the matching files.
+grep -l -r --include=\*.c "int i" * | xargs -L 1 basename
 
