@@ -14,13 +14,13 @@ pwd ; the output of running that command prints the current working directory. F
 whoami ; the output prints the username of the current user. My output was blui.
 
 6. What are shell environment variables? What command will print out the current environment variables (note, you should not provide the output of this command)?
-Shell enviroment variables are      ..... /??? printenv
+Shell enviroment variables are dynamic values stored by the system that affect how different applications run. Use the printenv command to print out he corrent enviroment variables. 
 
 7. What is the command to print the name of the current shell? What is the output of running that command?
-
+The command is echo $SHELL or printenv SHELL ;  The output is /bin/bash . 
 
 8. What is the command to print out the kernel version of your Ubuntu OS? What is the output of running that command?
-
+The command is uname -r ; The output is 5.15.0-58-generic .
 
 9. What is the command to list all files in the /bin/ directory whose filename starts with the string ch? What is the output of running that command? Note, the command must work regardless of the current working directory.
 
