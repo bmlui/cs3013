@@ -1,1 +1,30 @@
-1. 
+1. What is the root directory? What is the command to change the current working directory to the root directory?
+The root directory is /. The command to change the working directory to the root is cd /.
+
+2. What is the command to create an empty file with the name foo.txt?
+touch foo.txt
+
+3. What is the command to rename the file foo.txt to bar.txt.
+mv foo.txt bar.txt
+
+4. What is the command to find location of the binary executable file for the ls utility? What is the output of running that command?
+pwd ; the output of running that command prints the current working directory. For my case, this resulted in /home/blui/Documents/Git/cs3013.
+
+5. What is the command to print the username of the current user? What is the output of running that command?
+whoami ; the output prints the username of the current user. My output was blui.
+
+6. What are shell environment variables? What command will print out the current environment variables (note, you should not provide the output of this command)?
+Shell enviroment variables are      ..... /??? printenv
+
+7. What is the command to print the name of the current shell? What is the output of running that command?
+
+
+8. What is the command to print out the kernel version of your Ubuntu OS? What is the output of running that command?
+
+
+9. What is the command to list all files in the /bin/ directory whose filename starts with the string ch? What is the output of running that command? Note, the command must work regardless of the current working directory.
+
+10. What is the command to count the number of files in your home directory? What is the output of running that command? Note that you should include hidden files in your count but exclude any subdirectories. Also, you should use the tilde character (~) to specify the user’s home directory.
+
+11. What is the command to search the current directory and all subdirectories for C source code files containing the pattern int i? The command should output only the filenames for the matching files.
+
