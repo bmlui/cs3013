@@ -1,6 +1,0 @@
-../wgrep.c:1:1: error: unknown type name 'Place'
-    1 | Place code here.
-      | ^~~~~
-../wgrep.c:1:12: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'here'
-    1 | Place code here.
-      |            ^~~~
