@@ -1,19 +1,26 @@
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 int main(int argc, char *argv[]) {
- if ( argc < 2 )
+ if ( argc < 2)
     {
-        printf( "Please enter a file name to open and print\n" );
-        return 1;  
+        return 0;
     }
-    FILE *fp = fopen(argv[1], "r"); 
+    for (int i = 1; i<argc; i++) {
+        FILE *fp = fopen(argv[i], "r");
+        if (fp == NULL) {
+        printf("wcat: cannot open file\n");
+        return(1); }
+            char s[10000] = "";
+            do {
+                printf("%s", s);
+            }while(fgets(s, sizeof(s), fp));
+        
+        fclose(fp);
+    }
 
-if (fp == NULL) { 
-puts("Cannot open file\n");
-exit(1); }
-do{
-} while(TRUE);
+
+
 
 }
