@@ -1,0 +1,1 @@
+./wshell < tests/6.in  2>&1 > /dev/null & WPID=$!; sleep 1; CPID=`pgrep -P $WPID`; ps -fp $CPID | grep "sleep 3" -o

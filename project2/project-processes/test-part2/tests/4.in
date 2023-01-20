@@ -1,0 +1,4 @@
+/bin/ls
+/bin/cat tests/4a.in
+exit
+

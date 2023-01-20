@@ -1,0 +1,1 @@
+grep "system(" ../wshell.c -l; PATH="/bad/" ./wshell < tests/1.in

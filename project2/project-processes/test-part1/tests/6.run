@@ -1,0 +1,1 @@
+PATH="/bad" HOME="`pwd`" ./wshell < tests/6.in

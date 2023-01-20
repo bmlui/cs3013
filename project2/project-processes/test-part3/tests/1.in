@@ -1,0 +1,8 @@
+/bin/ls
+history
+echo hey there
+cd /
+pwd
+history
+exit
+

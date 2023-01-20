@@ -1,0 +1,3 @@
+/usr/bin/false || echo test passed 
+exit
+

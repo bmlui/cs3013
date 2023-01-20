@@ -1,0 +1,1 @@
+grep "system(" ../wshell.c; grep "exec.\{1,\}(" ../wshell.c -l; grep "fork(" ../wshell.c -l; objdump -d wshell | grep "exec.\{1,\}@plt" -l
