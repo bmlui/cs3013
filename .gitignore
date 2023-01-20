@@ -93,4 +93,5 @@ dkms.conf
 
 
 #Tests out by blui
-*/tests-out/*
+tests-out/
+*.zip
