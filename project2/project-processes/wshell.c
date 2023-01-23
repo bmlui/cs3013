@@ -4,36 +4,17 @@
 #include <string.h>
 #include <unistd.h>
 
-/*char[]* run(char[] workingDir, char[] input)
-{
-    char[]* args = parse(input);
-    if (strcmp(args[0], "cd") == 0)
-    {
-        chdir(args[1]);
-        return workingDir;
-    }
-    else
-    {
-        int pid = fork();
-        if (pid == 0)
-        {
-            execvp(args[0], args);
-        }
-        else
-        {
-            wait(NULL);
-        }
-    }
-}*/
 
 int main (int argc, char *argv[]) {
     bool isRunning = true;
-    char workingPath[100];
-    getcwd(workingPath, 100);
+    
+   
 while (isRunning)
 {
+    char workingPath[100];
+     getcwd(workingPath, 100);
     char* basename = strrchr(workingPath, '/');
-    basename ++;
+    basename++;
     char input[100];
     printf("%s$ ", basename );
     fgets(input, 100, stdin);
@@ -41,10 +22,17 @@ while (isRunning)
     if (strcmp(input, "exit") == 0)
     {
         isRunning = false;
+    } else if (strncmp(input, "cd", 2) == 0)
+    {
+        printf("%s", strcat(strcat(workingPath, "/"), input));
+        chdir(strcat(strcat(workingPath, "/"), input));
+    } else if (strncmp(input, "echo", 4) == 0)
+    {
+        printf("%s", input);
     }
     else
     {
-        system(input);
+       printf("Command not found");
     }
 }
  
