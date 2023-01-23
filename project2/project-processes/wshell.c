@@ -2,42 +2,52 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
+
+/*char[]* run(char[] workingDir, char[] input)
+{
+    char[]* args = parse(input);
+    if (strcmp(args[0], "cd") == 0)
+    {
+        chdir(args[1]);
+        return workingDir;
+    }
+    else
+    {
+        int pid = fork();
+        if (pid == 0)
+        {
+            execvp(args[0], args);
+        }
+        else
+        {
+            wait(NULL);
+        }
+    }
+}*/
 
 int main (int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("wshell: command not found");
-        return 1;
+    bool isRunning = true;
+    char workingPath[100];
+    getcwd(workingPath, 100);
+while (isRunning)
+{
+    char* basename = strrchr(workingPath, '/');
+    basename ++;
+    char input[100];
+    printf("%s$ ", basename );
+    fgets(input, 100, stdin);
+    input[strlen(input) - 1] = '\0';
+    if (strcmp(input, "exit") == 0)
+    {
+        isRunning = false;
     }
-    char* command = argv[1];
-    if (strcmp(command, "exit") == 0) {
-        return 0;
+    else
+    {
+        system(input);
     }
-    if (strcmp(command, "cd") == 0) {
-        if (argc < 3) {
-            printf("wshell: cd: missing argument");
-            return 1;
-        }
-        char* path = argv[2];
-        if (chdir(path) != 0) {
-            printf("wshell: cd: cannot change directory to %s", path);
-            return 1;
-        }
-        return 0;
-    }
-    if (strcmp(command, "pwd") == 0) {
-        char cwd[1024];
-        if (getcwd(cwd, sizeof(cwd)) != NULL) {
-            printf("%s ", cwd);
-        } else {
-            printf("wshell: pwd: cannot get current working directory");
-            return 1;
-        }
-        return 0;
-    }
-    if (strcmp(command, "help") == 0) {
-        printf("wshell: help: no help available");
-        return 0;
-    }
-    printf("wshell: command not found");
-    return 1;
 }
+ 
+
+}
+
