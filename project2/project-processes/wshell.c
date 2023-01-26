@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 int main(int argc, char *argv[])
 {
@@ -14,16 +15,18 @@ int main(int argc, char *argv[])
         char *basename = strrchr(workingPath, '/');
         basename++;
         char input[100];
-         if (strcmp(basename, "") == 0) {
+        if (strcmp(basename, "") == 0)
+        {
             basename = "/";
         }
         printf("%s$ ", basename);
         fgets(input, 100, stdin);
         input[strlen(input) - 1] = '\0';
-       if (!isatty(fileno(stdin))) { 
+        if (!isatty(fileno(stdin)))
+        {
             printf("%s\n", input);
             fflush(stdout);
-             }
+        }
         if (strncmp(input, "exit", 4) == 0)
         {
             isRunning = false;
@@ -31,48 +34,77 @@ int main(int argc, char *argv[])
         else if (strncmp(input, "cd", 2) == 0)
         {
             char *val = input + 3;
-            char *dirname = input +3;
-             if (strstr(val, " ")) {
-                    printf("wshell: cd: too many arguments\n");
-                }
+            char *dirname = input + 3;
+            if (strstr(val, " "))
+            {
+                printf("wshell: cd: too many arguments\n");
+            }
             else
             {
-                 if (strcmp(val, "..") == 0) {
+                if (strcmp(val, "..") == 0)
+                {
                     val = val;
-                }  else if ((strcmp(input, "cd") == 0)| (strcmp(input, "cd ") == 0))
-            {
-                val = getenv("HOME");
-               
-            } else if (strncmp(val, "/", 1) != 0)
+                }
+                else if ((strcmp(input, "cd") == 0) | (strcmp(input, "cd ") == 0))
+                {
+                    val = getenv("HOME");
+                }
+                else if (strncmp(val, "/", 1) != 0)
                 {
                     dirname = val;
                     val = strcat(strcat(workingPath, "/"), val);
-                }  
+                }
                 int rv = chdir(val);
-                if (rv != 0) {
+                if (rv != 0)
+                {
                     printf("wshell: no such directory: %s\n", dirname);
                 }
             }
         }
         else if (strncmp(input, "echo", 4) == 0)
         {
-            if (strncmp(input, "echo ", 5)  == 0 ) {
-            char * val = input +5; 
-            printf("%s\n", val);
-            } else {
+            if (strncmp(input, "echo ", 5) == 0)
+            {
+                char *val = input + 5;
+                printf("%s\n", val);
+            }
+            else
+            {
                 printf("\n");
             }
-          
         }
-          else if (strcmp(input, "pwd") == 0)
+        else if (strcmp(input, "pwd") == 0)
         {
-            printf("%s\n",workingPath);
-          
+            printf("%s\n", workingPath);
         }
         else
         {
-            printf("wshell: could not execute command: %s\n", input);
+         //   printf("wshell: could not execute command: %s\n", input);
+
+            char *command = "";
+            char *args[100];
+            char *currentStr = "";
+            printf("dhi");
+            for (int i = 0; i < strlen(input); i++)
+            {
+            
+                printf("%c", input[i]);
+                if (input[i] == ' ')
+                {
+                    args[i] = currentStr;
+                }
+                else
+                {
+                    const char *str = &input[i];
+                    strcat(currentStr, str);
+                }
+            }
+            int j = execvp(args[0], args);
+
+            if (j == -1)
+            {
+                printf("wshell: could not execute command: %s\n", command);
+            }
         }
-        
     }
 }
