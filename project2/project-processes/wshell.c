@@ -80,30 +80,29 @@ int main(int argc, char *argv[])
         else
         {
          //   printf("wshell: could not execute command: %s\n", input);
-
-            char *command = "";
-            char *args[100];
-            char *currentStr = "";
-            printf("dhi");
-            for (int i = 0; i < strlen(input); i++)
-            {
-            
-                printf("%c", input[i]);
-                if (input[i] == ' ')
+            int pid = fork();
+            if (pid < 0 ) {
+                printf("wshell: fork failed\n");
+            } else if (pid == 0) {
+                char *args[100];
+                char *token = strtok(input, " ");
+                int i = 0;
+                while (token != NULL)
                 {
-                    args[i] = currentStr;
+                    args[i] = token;
+                    token = strtok(NULL, " ");
+                    i++;
                 }
-                else
+                args[i] = NULL;
+                int rv = execvp(args[0], args);
+                if (rv != 0)
                 {
-                    const char *str = &input[i];
-                    strcat(currentStr, str);
+                    printf("wshell: could not execute command: %s\n", input);
+                    exit(0);
                 }
-            }
-            int j = execvp(args[0], args);
-
-            if (j == -1)
-            {
-                printf("wshell: could not execute command: %s\n", command);
+            } else {
+                int status;
+                waitpid(pid, &status, 0);
             }
         }
     }
