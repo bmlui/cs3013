@@ -1,0 +1,3 @@
+test-part1$ cd /tmp too-many
+wshell: cd: too many arguments
+test-part1$ exit

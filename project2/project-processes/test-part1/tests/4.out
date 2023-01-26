@@ -1,0 +1,3 @@
+test-part1$ cd tests
+tests$ cd ..
+test-part1$ exit

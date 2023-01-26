@@ -1,0 +1,3 @@
+test-part2$ find . -name 1.in
+./tests/1.in
+test-part2$ exit

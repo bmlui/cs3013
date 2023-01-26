@@ -1,0 +1,3 @@
+test-part3$ /usr/bin/true && echo it works 
+it works 
+test-part3$ exit

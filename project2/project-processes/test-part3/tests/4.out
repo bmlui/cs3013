@@ -1,0 +1,2 @@
+test-part3$ /usr/bin/false && echo This should not print 
+test-part3$ exit

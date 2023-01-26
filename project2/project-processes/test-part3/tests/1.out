@@ -1,0 +1,21 @@
+test-part3$ /bin/ls
+test_part3.sh
+tests
+tests-out
+wshell
+test-part3$ history
+/bin/ls
+history
+test-part3$ echo hey there
+hey there
+test-part3$ cd /
+/$ pwd
+/
+/$ history
+/bin/ls
+history
+echo hey there
+cd /
+pwd
+history
+/$ exit

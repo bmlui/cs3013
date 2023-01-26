@@ -1,0 +1,5 @@
+../wshell.c
+test-part1$ cd /
+/$ pwd
+/
+/$ exit

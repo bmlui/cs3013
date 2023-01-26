@@ -1,0 +1,6 @@
+test-part4$ bash -c $PWD/tests/4.sh &
+[1]
+test-part4$ sleep 3
+Hello from the script!
+[1] Done: bash -c $PWD/tests/4.sh 
+test-part4$ exit

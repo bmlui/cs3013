@@ -1,0 +1,2 @@
+test-part3$ /usr/bin/true || echo test failed 
+test-part3$ exit
