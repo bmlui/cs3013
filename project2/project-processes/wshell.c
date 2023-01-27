@@ -9,6 +9,8 @@
 int main(int argc, char *argv[])
 {
     bool isRunning = true;
+       char * history[10];
+
     while (isRunning)
     {
         char workingPath[100];
@@ -28,6 +30,15 @@ int main(int argc, char *argv[])
             printf("%s\n", input);
             fflush(stdout);
         }
+        int i = 9;
+        strcpy( history[0], input);
+        while (i>0) {
+            if (history[i-1] != NULL){
+            strcpy( history[i], history[i-1]);
+            }
+            i--;
+        }
+ 
         if (strncmp(input, "exit", 4) == 0)
         {
             isRunning = false;
@@ -78,13 +89,32 @@ int main(int argc, char *argv[])
         {
             printf("%s\n", workingPath);
         }
+        else if (strcmp(input, "help") == 0)
+        {
+            printf("wshell: a simple shell written in C");
+        }
+        else if (strcmp(input, "history") == 0)
+        {
+            i = 9;
+            while(i  > -1) {
+                if (history[i] != NULL){
+                printf("%s\n", history[i]);
+                }
+
+                i--;
+            }
+
+            }
         else
         {
-         //   printf("wshell: could not execute command: %s\n", input);
+            //   printf("wshell: could not execute command: %s\n", input);
             int pid = fork();
-            if (pid < 0 ) {
+            if (pid < 0)
+            {
                 printf("wshell: fork failed\n");
-            } else if (pid == 0) {
+            }
+            else if (pid == 0)
+            {
                 char *args[100];
                 char *token = strtok(input, " ");
                 int i = 0;
@@ -101,7 +131,9 @@ int main(int argc, char *argv[])
                     printf("wshell: could not execute command: %s\n", input);
                     exit(0);
                 }
-            } else {
+            }
+            else
+            {
                 int status;
                 waitpid(pid, &status, 0);
             }
