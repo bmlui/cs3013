@@ -9,7 +9,8 @@
 int main(int argc, char *argv[])
 {
     bool isRunning = true;
-       char * history[10];
+    char *history[10];
+    int historyIndex = 0;
 
     while (isRunning)
     {
@@ -30,15 +31,9 @@ int main(int argc, char *argv[])
             printf("%s\n", input);
             fflush(stdout);
         }
-        int i = 9;
-        strcpy( history[0], input);
-        while (i>0) {
-            if (history[i-1] != NULL){
-            strcpy( history[i], history[i-1]);
-            }
-            i--;
-        }
- 
+        history[historyIndex % 10] = strdup(input);
+        historyIndex++;
+
         if (strncmp(input, "exit", 4) == 0)
         {
             isRunning = false;
@@ -95,16 +90,23 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(input, "history") == 0)
         {
-            i = 9;
-            while(i  > -1) {
-                if (history[i] != NULL){
-                printf("%s\n", history[i]);
+            if (historyIndex < 10)
+            {
+                for (int i = 0; i < historyIndex; i++)
+                {
+                    printf("%s\n", history[i]);
                 }
-
-                i--;
             }
-
+            else
+            {
+                for (int i = historyIndex; i < historyIndex + 10; i++)
+                {
+                    int a = i % 10;
+                    printf("%s\n", history[a]);
+                }
             }
+        }
+
         else
         {
             //   printf("wshell: could not execute command: %s\n", input);
