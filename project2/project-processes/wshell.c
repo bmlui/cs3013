@@ -6,9 +6,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+    bool isRunning = true;
+
 int main(int argc, char *argv[])
 {
-    bool isRunning = true;
     char *history[10];
     int historyIndex = 0;
 
@@ -34,7 +35,43 @@ int main(int argc, char *argv[])
         history[historyIndex % 10] = strdup(input);
         historyIndex++;
 
-        if (strncmp(input, "exit", 4) == 0)
+        // implements && and || operators
+        if (strstr(input, "&&") != NULL)
+        {
+            char *token = strtok(input, " && ");
+            while (token != NULL)
+            {
+                int rv = command(token, workingPath, history, historyIndex);
+                if (rv != 0)
+                {
+                    break;
+                }
+                token = strtok(NULL, " && ");
+            }
+        }
+        else if (strstr(input, "||") != NULL)
+        {
+            char *token = strtok(input, " || ");
+            while (token != NULL)
+            {
+                int rv = command(token, workingPath, history, historyIndex);
+                if (rv == 0)
+                {
+                    break;
+                }
+                token = strtok(NULL, " || ");
+            }
+        }
+        else
+        {
+            command(input, workingPath, history, historyIndex);
+        }
+    
+    }
+}
+
+int command(char *input, char* workingPath, char *history[10], int historyIndex) {
+ if (strncmp(input, "exit", 4) == 0)
         {
             isRunning = false;
         }
@@ -45,6 +82,7 @@ int main(int argc, char *argv[])
             if (strstr(val, " "))
             {
                 printf("wshell: cd: too many arguments\n");
+                return 1;
             }
             else
             {
@@ -65,8 +103,10 @@ int main(int argc, char *argv[])
                 if (rv != 0)
                 {
                     printf("wshell: no such directory: %s\n", dirname);
+                              return 1;
                 }
             }
+                
         }
         else if (strncmp(input, "echo", 4) == 0)
         {
@@ -114,6 +154,7 @@ int main(int argc, char *argv[])
             if (pid < 0)
             {
                 printf("wshell: fork failed\n");
+                 return 1;
             }
             else if (pid == 0)
             {
@@ -131,7 +172,7 @@ int main(int argc, char *argv[])
                 if (rv != 0)
                 {
                     printf("wshell: could not execute command: %s\n", input);
-                    exit(0);
+                     return 1;
                 }
             }
             else
@@ -140,5 +181,5 @@ int main(int argc, char *argv[])
                 waitpid(pid, &status, 0);
             }
         }
-    }
+         return 0;
 }
