@@ -182,7 +182,15 @@ int main(int argc, char *argv[])
                 {
                    command(token2, workingPath, history, historyIndex);
                 }
-        } else {
+        } 
+        // background operators
+        else if (strstr(input, "&") != NULL)
+        {
+            char *token = strtok(input, "&");
+            command(token, workingPath, history, historyIndex);
+        }
+        
+        else {
             command(input, workingPath, history, historyIndex);
             if (breakk == 1)
             {
