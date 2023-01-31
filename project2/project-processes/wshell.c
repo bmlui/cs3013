@@ -6,14 +6,141 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-    bool isRunning = true;
+int breakk = 0;
+bool lastCmdFail = false;
+void command(char *input, char *workingPath, char *history[10], int historyIndex)
+{
+    lastCmdFail = false;
+    if (strncmp(input, "exit", 4) == 0)
+    {
+        breakk = 1;
+    }
+    else if (strncmp(input, "cd", 2) == 0)
+    {
+         char *args[100];
+            char *token = strtok(input, " ");
+            int i = 0;
+            while (token != NULL)
+            {
+                args[i] = token;
+                token = strtok(NULL, " ");
+                i++;
+            }
+            args[i] = NULL;
+            char* val = args[1];
+        char *dirname = val;
+        if (args[2] != NULL)
+        {
+            printf("wshell: cd: too many arguments\n");
+            lastCmdFail = true;
+        }
+        else
+        {
+           
+         if (args[1] == NULL)
+            {
+                val = getenv("HOME");
+            }
+            else if (strncmp(val, "/", 1) != 0)
+            {
+                val = strcat(strcat(workingPath, "/"), val);
+            }
+            int rv = chdir(val);
+            if (rv != 0)
+            {
+                printf("wshell: no such directory: %s\n", dirname);
+                lastCmdFail = true;
+            }
+        }
+    }
+    else if (strncmp(input, "echo", 4) == 0)
+    {
+        if (strncmp(input, "echo ", 5) == 0)
+        {
+            char *val = input + 5;
+            printf("%s\n", val);
+        }
+        else
+        {
+            printf("\n");
+        }
+    }
+    else if (strcmp(input, "pwd") == 0)
+    {
+        printf("%s\n", workingPath);
+    }
+    else if (strcmp(input, "help") == 0)
+    {
+        printf("wshell: a simple shell written in C");
+    }
+    else if (strcmp(input, "history") == 0)
+    {
+        if (historyIndex < 10)
+        {
+            for (int i = 0; i < historyIndex; i++)
+            {
+                printf("%s\n", history[i]);
+            }
+        }
+        else
+        {
+            for (int i = historyIndex; i < historyIndex + 10; i++)
+            {
+                int a = i % 10;
+                printf("%s\n", history[a]);
+            }
+        }
+    }
+    else
+    {
+        //   printf("wshell: could not execute command: %s\n", input);
+        int pid = fork();
+        if (pid < 0)
+        {
+            printf("wshell: fork failed\n");
+        }
+        else if (pid == 0)
+        {
+            char *args[100];
+            char *token = strtok(input, " ");
+            int i = 0;
+            while (token != NULL)
+            {
+                args[i] = token;
+                token = strtok(NULL, " ");
+                i++;
+            }
+            args[i] = NULL;
+            int rv = execvp(args[0], args);
+            if (rv != 0)
+            {
+                printf("wshell: could not execute command: %s\n", input);
+                lastCmdFail = true;
+                exit(0);
+            }
+        }
+        else
+        {
+            int status;
+            waitpid(pid, &status, 0);
+            if (WEXITSTATUS(status) == 0)
+            {
+                lastCmdFail = false;
+            }
+            else
+            {
+                lastCmdFail = true;
+            }
+        }
+    }
+}
 
 int main(int argc, char *argv[])
 {
     char *history[10];
     int historyIndex = 0;
-
-    while (isRunning)
+    int rc = 0;
+    while (true)
     {
         char workingPath[100];
         getcwd(workingPath, 100);
@@ -38,148 +165,30 @@ int main(int argc, char *argv[])
         // implements && and || operators
         if (strstr(input, "&&") != NULL)
         {
-            char *token = strtok(input, " && ");
-            while (token != NULL)
-            {
-                int rv = command(token, workingPath, history, historyIndex);
-                if (rv != 0)
+            char *token = strtok(input, "&&");
+            char* token2 = strtok(NULL, "&&");
+            command(token, workingPath, history, historyIndex);
+             if (lastCmdFail == false)
                 {
-                    break;
+                    command(token2, workingPath, history, historyIndex);
                 }
-                token = strtok(NULL, " && ");
-            }
         }
         else if (strstr(input, "||") != NULL)
         {
-            char *token = strtok(input, " || ");
-            while (token != NULL)
-            {
-                int rv = command(token, workingPath, history, historyIndex);
-                if (rv == 0)
+            char *token = strtok(input, "||");
+            char* token2 = strtok(NULL, "||");
+             command(token, workingPath, history, historyIndex);
+             if (lastCmdFail == true)
                 {
-                    break;
+                   command(token2, workingPath, history, historyIndex);
                 }
-                token = strtok(NULL, " || ");
-            }
-        }
-        else
-        {
+        } else {
             command(input, workingPath, history, historyIndex);
+            if (breakk == 1)
+            {
+                break;
+            }
         }
-    
     }
-}
-
-int command(char *input, char* workingPath, char *history[10], int historyIndex) {
- if (strncmp(input, "exit", 4) == 0)
-        {
-            isRunning = false;
-        }
-        else if (strncmp(input, "cd", 2) == 0)
-        {
-            char *val = input + 3;
-            char *dirname = input + 3;
-            if (strstr(val, " "))
-            {
-                printf("wshell: cd: too many arguments\n");
-                return 1;
-            }
-            else
-            {
-                if (strcmp(val, "..") == 0)
-                {
-                    val = val;
-                }
-                else if ((strcmp(input, "cd") == 0) | (strcmp(input, "cd ") == 0))
-                {
-                    val = getenv("HOME");
-                }
-                else if (strncmp(val, "/", 1) != 0)
-                {
-                    dirname = val;
-                    val = strcat(strcat(workingPath, "/"), val);
-                }
-                int rv = chdir(val);
-                if (rv != 0)
-                {
-                    printf("wshell: no such directory: %s\n", dirname);
-                              return 1;
-                }
-            }
-                
-        }
-        else if (strncmp(input, "echo", 4) == 0)
-        {
-            if (strncmp(input, "echo ", 5) == 0)
-            {
-                char *val = input + 5;
-                printf("%s\n", val);
-            }
-            else
-            {
-                printf("\n");
-            }
-        }
-        else if (strcmp(input, "pwd") == 0)
-        {
-            printf("%s\n", workingPath);
-        }
-        else if (strcmp(input, "help") == 0)
-        {
-            printf("wshell: a simple shell written in C");
-        }
-        else if (strcmp(input, "history") == 0)
-        {
-            if (historyIndex < 10)
-            {
-                for (int i = 0; i < historyIndex; i++)
-                {
-                    printf("%s\n", history[i]);
-                }
-            }
-            else
-            {
-                for (int i = historyIndex; i < historyIndex + 10; i++)
-                {
-                    int a = i % 10;
-                    printf("%s\n", history[a]);
-                }
-            }
-        }
-
-        else
-        {
-            //   printf("wshell: could not execute command: %s\n", input);
-            int pid = fork();
-            if (pid < 0)
-            {
-                printf("wshell: fork failed\n");
-                 return 1;
-            }
-            else if (pid == 0)
-            {
-                char *args[100];
-                char *token = strtok(input, " ");
-                int i = 0;
-                while (token != NULL)
-                {
-                    args[i] = token;
-                    token = strtok(NULL, " ");
-                    i++;
-                }
-                args[i] = NULL;
-                int rv = execvp(args[0], args);
-                if (rv != 0)
-                {
-                    printf("wshell: could not execute command: %s\n", input);
-                     return 1;
-                }
-            }
-            else
-            {
-                int status;
-                waitpid(pid, &status, 0);
-            }
-        }
-         return 0;
+    return rc;
 }
