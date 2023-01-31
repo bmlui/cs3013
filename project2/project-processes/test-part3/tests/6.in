@@ -1,3 +1,3 @@
-/usr/bin/false || echo test passed 
+/usr/bin/false || echo test passed
 exit
 

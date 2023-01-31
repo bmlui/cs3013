@@ -1,3 +1,3 @@
-/usr/bin/true && echo it works 
+/usr/bin/true && echo it works
 exit
 
