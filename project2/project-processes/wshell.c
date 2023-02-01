@@ -8,7 +8,9 @@
 
 int breakk = 0;
 bool lastCmdFail = false;
-char *jobs[100][100];
+int pidArr[255];
+char *jobName[255];
+int pidIndex = 0;
 void command(char *input, char *workingPath, char *history[10], int historyIndex)
 {
     lastCmdFail = false;
@@ -18,17 +20,17 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
     }
     else if (strncmp(input, "cd", 2) == 0)
     {
-         char *args[100];
-            char *token = strtok(input, " ");
-            int i = 0;
-            while (token != NULL)
-            {
-                args[i] = token;
-                token = strtok(NULL, " ");
-                i++;
-            }
-            args[i] = NULL;
-            char* val = args[1];
+        char *args[100];
+        char *token = strtok(input, " ");
+        int i = 0;
+        while (token != NULL)
+        {
+            args[i] = token;
+            token = strtok(NULL, " ");
+            i++;
+        }
+        args[i] = NULL;
+        char *val = args[1];
         char *dirname = val;
         if (args[2] != NULL)
         {
@@ -37,8 +39,8 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
         }
         else
         {
-           
-         if (args[1] == NULL)
+
+            if (args[1] == NULL)
             {
                 val = getenv("HOME");
             }
@@ -92,8 +94,13 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
             }
         }
     }
-    else if (strcmp(input, "jobs") == 0) {
-        
+    else if (strcmp(input, "jobs") == 0)
+    {
+        //prints all background jobs 
+        for (int i = 0; i < pidIndex; i++)
+        {
+            printf("%d: %s\n", i + 1, jobName[i]);
+        }
     }
     else
     {
@@ -139,9 +146,7 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
     }
 }
 
-    int pidArr[255];
-    char* jobName[255];
-    int pidIndex = 0;
+
 int main(int argc, char *argv[])
 {
     char *history[10];
@@ -170,50 +175,53 @@ int main(int argc, char *argv[])
         history[historyIndex % 10] = strdup(input);
         historyIndex++;
 
-        //checks for any done jobs 
-        for (int i = 0; i < pidIndex; i++) {
+        // checks for any done jobs
+        for (int i = 0; i < pidIndex; i++)
+        {
             int status;
             int rv = waitpid(pidArr[i], &status, WNOHANG);
-            if (rv != 0) {
-                printf("[%d]: Done: %s\n", i+1, jobName[i]); 
+            if (rv != 0)
+            {
+                printf("[%d]: Done: %s\n", i + 1, jobName[i]);
                 pidArr[i] = 0;
                 jobName[i] = NULL;
-                for (int j = pidIndex; j > i+1; j--) {
-                    pidArr[j-1] = pidArr[j];
-                    jobName[j-1] = strdup(jobName[j]);
+                for (int j = i; j < pidIndex; j++)
+                {
+                    pidArr[j] = pidArr[j + 1];
+                    jobName[j] = jobName[j + 1];
                 }
                 pidIndex--;
-                }
-                }
+            }
+        }
 
         // implements && and || operators
         if (strstr(input, " && ") != NULL)
         {
             char *token = strtok(input, "&&");
-            char* token2 = strtok(NULL, "&&");
+            char *token2 = strtok(NULL, "&&");
             command(token, workingPath, history, historyIndex);
-             if (lastCmdFail == false)
-                {
-                    command(token2, workingPath, history, historyIndex);
-                }
+            if (lastCmdFail == false)
+            {
+                command(token2, workingPath, history, historyIndex);
+            }
         }
         else if (strstr(input, " || ") != NULL)
         {
             char *token = strtok(input, "||");
-            char* token2 = strtok(NULL, "||");
-             command(token, workingPath, history, historyIndex);
-             if (lastCmdFail == true)
-                {
-                   command(token2, workingPath, history, historyIndex);
-                }
-        } 
+            char *token2 = strtok(NULL, "||");
+            command(token, workingPath, history, historyIndex);
+            if (lastCmdFail == true)
+            {
+                command(token2, workingPath, history, historyIndex);
+            }
+        }
         // background operators
         else if (strstr(input, " &") != NULL)
         {
-             printf("[%d]\n", (pidIndex+1));
+            printf("[%d]\n", (pidIndex + 1));
             char *token = strtok(input, "&");
             int pid = fork();
-             pidArr[pidIndex] = pid;
+            pidArr[pidIndex] = pid;
             jobName[pidIndex] = strdup(token);
             pidIndex++;
             if (pid < 0)
@@ -224,16 +232,16 @@ int main(int argc, char *argv[])
             {
                 command(token, workingPath, history, historyIndex);
                 exit(0);
-            } else {
+            }
+            else
+            {
                 int status;
                 waitpid(pid, &status, WNOHANG);
-
-
             }
-            
         }
-    
-        else {
+
+        else
+        {
             command(input, workingPath, history, historyIndex);
             if (breakk == 1)
             {
