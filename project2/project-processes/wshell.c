@@ -8,6 +8,7 @@
 
 int breakk = 0;
 bool lastCmdFail = false;
+char *jobs[100][100];
 void command(char *input, char *workingPath, char *history[10], int historyIndex)
 {
     lastCmdFail = false;
@@ -91,6 +92,9 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
             }
         }
     }
+    else if (strcmp(input, "jobs") == 0) {
+        
+    }
     else
     {
         //   printf("wshell: could not execute command: %s\n", input);
@@ -135,11 +139,13 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
     }
 }
 
+
 int main(int argc, char *argv[])
 {
     char *history[10];
     int historyIndex = 0;
     int rc = 0;
+
     while (true)
     {
         char workingPath[100];
@@ -161,9 +167,9 @@ int main(int argc, char *argv[])
         }
         history[historyIndex % 10] = strdup(input);
         historyIndex++;
-
+        check_jobs();
         // implements && and || operators
-        if (strstr(input, "&&") != NULL)
+        if (strstr(input, " && ") != NULL)
         {
             char *token = strtok(input, "&&");
             char* token2 = strtok(NULL, "&&");
@@ -173,7 +179,7 @@ int main(int argc, char *argv[])
                     command(token2, workingPath, history, historyIndex);
                 }
         }
-        else if (strstr(input, "||") != NULL)
+        else if (strstr(input, " || ") != NULL)
         {
             char *token = strtok(input, "||");
             char* token2 = strtok(NULL, "||");
@@ -184,12 +190,27 @@ int main(int argc, char *argv[])
                 }
         } 
         // background operators
-        else if (strstr(input, "&") != NULL)
+        else if (strstr(input, " &") != NULL)
         {
             char *token = strtok(input, "&");
-            command(token, workingPath, history, historyIndex);
+            int pid = fork();
+            if (pid < 0)
+            {
+                printf("wshell: fork failed\n");
+            }
+            else if (pid == 0)
+            {
+                printf("[%s]\n", add_pid(pid, token));
+                command(token, workingPath, history, historyIndex);
+                exit(0);
+            } else {
+                int status;
+                waitpid(pid, &status, WNOHANG);
+
+            }
+            
         }
-        
+    
         else {
             command(input, workingPath, history, historyIndex);
             if (breakk == 1)
