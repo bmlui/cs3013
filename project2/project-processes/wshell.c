@@ -139,7 +139,9 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
     }
 }
 
-
+    int pidArr[255];
+    char* jobName[255];
+    int pidIndex = 0;
 int main(int argc, char *argv[])
 {
     char *history[10];
@@ -167,7 +169,23 @@ int main(int argc, char *argv[])
         }
         history[historyIndex % 10] = strdup(input);
         historyIndex++;
-        check_jobs();
+
+        //checks for any done jobs 
+        for (int i = 0; i < pidIndex; i++) {
+            int status;
+            int rv = waitpid(pidArr[i], &status, WNOHANG);
+            if (rv != 0) {
+                printf("[%d]: Done: %s\n", i+1, jobName[i]); 
+                pidArr[i] = 0;
+                jobName[i] = NULL;
+                for (int j = pidIndex; j > i+1; j--) {
+                    pidArr[j-1] = pidArr[j];
+                    jobName[j-1] = strdup(jobName[j]);
+                }
+                pidIndex--;
+                }
+                }
+
         // implements && and || operators
         if (strstr(input, " && ") != NULL)
         {
@@ -192,20 +210,24 @@ int main(int argc, char *argv[])
         // background operators
         else if (strstr(input, " &") != NULL)
         {
+             printf("[%d]\n", (pidIndex+1));
             char *token = strtok(input, "&");
             int pid = fork();
+             pidArr[pidIndex] = pid;
+            jobName[pidIndex] = strdup(token);
+            pidIndex++;
             if (pid < 0)
             {
                 printf("wshell: fork failed\n");
             }
             else if (pid == 0)
             {
-                printf("[%s]\n", add_pid(pid, token));
                 command(token, workingPath, history, historyIndex);
                 exit(0);
             } else {
                 int status;
                 waitpid(pid, &status, WNOHANG);
+
 
             }
             
