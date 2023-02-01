@@ -74,7 +74,7 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
     }
     else if (strcmp(input, "help") == 0)
     {
-        printf("wshell: a simple shell written in C");
+        printf("wshell: a simple shell written in C\n");
     }
     else if (strcmp(input, "history") == 0)
     {
@@ -99,8 +99,44 @@ void command(char *input, char *workingPath, char *history[10], int historyIndex
         //prints all background jobs 
         for (int i = 0; i < pidIndex; i++)
         {
-            printf("%d: %s\n", i + 1, jobName[i]);
+            if (pidArr[i] != 0)
+            {
+                printf("%d: %s\n", i + 1, jobName[i]);
+            }
         }
+    }
+        else if (strncmp(input, "kill", 4) == 0)
+    {
+        //kills a background job
+        char *args[100];
+        char *token = strtok(input, " ");
+        int i = 0;
+        while (token != NULL)
+        {
+            args[i] = token;
+            token = strtok(NULL, " ");
+            i++;
+        }
+        args[i] = NULL;
+        int jobNum = atoi(args[1]);
+      if (pidArr[jobNum - 1] == 0)
+            {
+                printf("wshell: no such background job: %d\n", jobNum);
+                lastCmdFail = true;
+            } else {
+                int i = jobNum - 1;
+                int rv = kill(pidArr[i], 9);
+                if (rv != 0)
+                {
+                    printf("wshell: no such background job: %d\n", jobNum);
+                    lastCmdFail = true;
+                } else {
+                    pidArr[i] = 0;
+                    jobName[i] = NULL;
+                }
+            }
+          
+        
     }
     else
     {
@@ -175,22 +211,19 @@ int main(int argc, char *argv[])
         history[historyIndex % 10] = strdup(input);
         historyIndex++;
 
-        // checks for any done jobs
+      // checks for any done jobs
         for (int i = 0; i < pidIndex; i++)
         {
             int status;
             int rv = waitpid(pidArr[i], &status, WNOHANG);
             if (rv != 0)
             {
+                if (jobName[i] != NULL) {
                 printf("[%d]: Done: %s\n", i + 1, jobName[i]);
-                pidArr[i] = 0;
                 jobName[i] = NULL;
-                for (int j = i; j < pidIndex; j++)
-                {
-                    pidArr[j] = pidArr[j + 1];
-                    jobName[j] = jobName[j + 1];
+                pidArr[i] = 0;
                 }
-                pidIndex--;
+               
             }
         }
 
@@ -200,9 +233,11 @@ int main(int argc, char *argv[])
             char *token = strtok(input, "&&");
             char *token2 = strtok(NULL, "&&");
             command(token, workingPath, history, historyIndex);
+            
             if (lastCmdFail == false)
             {
                 command(token2, workingPath, history, historyIndex);
+               
             }
         }
         else if (strstr(input, " || ") != NULL)
@@ -210,20 +245,19 @@ int main(int argc, char *argv[])
             char *token = strtok(input, "||");
             char *token2 = strtok(NULL, "||");
             command(token, workingPath, history, historyIndex);
+           
             if (lastCmdFail == true)
             {
                 command(token2, workingPath, history, historyIndex);
+                
             }
         }
         // background operators
         else if (strstr(input, " &") != NULL)
-        {
-            printf("[%d]\n", (pidIndex + 1));
+        {  
             char *token = strtok(input, "&");
+               token[strlen(token)-1] = '\0';
             int pid = fork();
-            pidArr[pidIndex] = pid;
-            jobName[pidIndex] = strdup(token);
-            pidIndex++;
             if (pid < 0)
             {
                 printf("wshell: fork failed\n");
@@ -232,14 +266,14 @@ int main(int argc, char *argv[])
             {
                 command(token, workingPath, history, historyIndex);
                 exit(0);
+            }  else {
+             printf("[%d]\n", (pidIndex + 1));   
+            pidArr[pidIndex] = pid;
+            jobName[pidIndex] = strdup(token);
+            pidIndex++;
             }
-            else
-            {
-                int status;
-                waitpid(pid, &status, WNOHANG);
-            }
+           
         }
-
         else
         {
             command(input, workingPath, history, historyIndex);
@@ -248,6 +282,10 @@ int main(int argc, char *argv[])
                 break;
             }
         }
+         if (breakk == 1)
+            {
+                break;
+            }
     }
     return rc;
 }
