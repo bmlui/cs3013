@@ -1,0 +1,9 @@
+Execution trace with SJF:
+t=0: [Job 0] arrived at [0], ran for: [3]
+t=5: [Job 1] arrived at [5], ran for: [2]
+End of execution with SJF.
+Begin analyzing SJF:
+Job 0 -- Response time: 0  Turnaround: 3  Wait: 0
+Job 1 -- Response time: 0  Turnaround: 2  Wait: 0
+Average -- Response: 0.00  Turnaround 2.50  Wait 0.00
+End analyzing SJF.

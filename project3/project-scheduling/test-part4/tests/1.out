@@ -1,0 +1,35 @@
+Execution trace with RR:
+t=0: [Job 0] arrived at [0], ran for: [2]
+t=2: [Job 1] arrived at [0], ran for: [2]
+t=4: [Job 2] arrived at [0], ran for: [2]
+t=6: [Job 3] arrived at [0], ran for: [2]
+t=8: [Job 4] arrived at [0], ran for: [2]
+t=10: [Job 5] arrived at [0], ran for: [2]
+t=12: [Job 6] arrived at [0], ran for: [2]
+t=14: [Job 7] arrived at [0], ran for: [2]
+t=16: [Job 8] arrived at [0], ran for: [2]
+t=18: [Job 9] arrived at [0], ran for: [2]
+t=20: [Job 0] arrived at [0], ran for: [1]
+t=21: [Job 2] arrived at [0], ran for: [2]
+t=23: [Job 3] arrived at [0], ran for: [2]
+t=25: [Job 4] arrived at [0], ran for: [2]
+t=27: [Job 7] arrived at [0], ran for: [2]
+t=29: [Job 8] arrived at [0], ran for: [1]
+t=30: [Job 3] arrived at [0], ran for: [1]
+t=31: [Job 4] arrived at [0], ran for: [2]
+t=33: [Job 7] arrived at [0], ran for: [2]
+t=35: [Job 4] arrived at [0], ran for: [1]
+End of execution with RR.
+Begin analyzing RR:
+Job 0 -- Response time: 0  Turnaround: 21  Wait: 18
+Job 1 -- Response time: 2  Turnaround: 4  Wait: 2
+Job 2 -- Response time: 4  Turnaround: 23  Wait: 19
+Job 3 -- Response time: 6  Turnaround: 31  Wait: 26
+Job 4 -- Response time: 8  Turnaround: 36  Wait: 29
+Job 5 -- Response time: 10  Turnaround: 12  Wait: 10
+Job 6 -- Response time: 12  Turnaround: 14  Wait: 12
+Job 7 -- Response time: 14  Turnaround: 35  Wait: 29
+Job 8 -- Response time: 16  Turnaround: 30  Wait: 27
+Job 9 -- Response time: 18  Turnaround: 20  Wait: 18
+Average -- Response: 9.00  Turnaround 22.60  Wait 19.00
+End analyzing RR.

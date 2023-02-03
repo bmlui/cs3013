@@ -1,0 +1,45 @@
+Execution trace with SJF:
+t=0: [Job 2] arrived at [0], ran for: [1]
+t=1: [Job 13] arrived at [0], ran for: [2]
+t=3: [Job 14] arrived at [0], ran for: [4]
+t=7: [Job 4] arrived at [0], ran for: [5]
+t=12: [Job 12] arrived at [0], ran for: [5]
+t=17: [Job 1] arrived at [0], ran for: [6]
+t=23: [Job 5] arrived at [0], ran for: [6]
+t=29: [Job 6] arrived at [0], ran for: [8]
+t=37: [Job 9] arrived at [0], ran for: [10]
+t=47: [Job 0] arrived at [0], ran for: [11]
+t=58: [Job 16] arrived at [0], ran for: [12]
+t=70: [Job 7] arrived at [0], ran for: [13]
+t=83: [Job 3] arrived at [0], ran for: [14]
+t=97: [Job 19] arrived at [0], ran for: [14]
+t=111: [Job 15] arrived at [0], ran for: [17]
+t=128: [Job 17] arrived at [0], ran for: [19]
+t=147: [Job 8] arrived at [0], ran for: [20]
+t=167: [Job 10] arrived at [0], ran for: [20]
+t=187: [Job 11] arrived at [0], ran for: [20]
+t=207: [Job 18] arrived at [0], ran for: [20]
+End of execution with SJF.
+Begin analyzing SJF:
+Job 0 -- Response time: 47  Turnaround: 58  Wait: 47
+Job 1 -- Response time: 17  Turnaround: 23  Wait: 17
+Job 2 -- Response time: 0  Turnaround: 1  Wait: 0
+Job 3 -- Response time: 83  Turnaround: 97  Wait: 83
+Job 4 -- Response time: 7  Turnaround: 12  Wait: 7
+Job 5 -- Response time: 23  Turnaround: 29  Wait: 23
+Job 6 -- Response time: 29  Turnaround: 37  Wait: 29
+Job 7 -- Response time: 70  Turnaround: 83  Wait: 70
+Job 8 -- Response time: 147  Turnaround: 167  Wait: 147
+Job 9 -- Response time: 37  Turnaround: 47  Wait: 37
+Job 10 -- Response time: 167  Turnaround: 187  Wait: 167
+Job 11 -- Response time: 187  Turnaround: 207  Wait: 187
+Job 12 -- Response time: 12  Turnaround: 17  Wait: 12
+Job 13 -- Response time: 1  Turnaround: 3  Wait: 1
+Job 14 -- Response time: 3  Turnaround: 7  Wait: 3
+Job 15 -- Response time: 111  Turnaround: 128  Wait: 111
+Job 16 -- Response time: 58  Turnaround: 70  Wait: 58
+Job 17 -- Response time: 128  Turnaround: 147  Wait: 128
+Job 18 -- Response time: 207  Turnaround: 227  Wait: 207
+Job 19 -- Response time: 97  Turnaround: 111  Wait: 97
+Average -- Response: 71.55  Turnaround 82.90  Wait 71.55
+End analyzing SJF.

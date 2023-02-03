@@ -1,0 +1,1 @@
+./scheduler 0 FIFO tests/3.in 0

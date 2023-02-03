@@ -1,0 +1,14 @@
+Execution trace with RR:
+t=0: [Job 0] arrived at [0], ran for: [1]
+t=2: [Job 1] arrived at [2], ran for: [2]
+t=4: [Job 2] arrived at [3], ran for: [2]
+t=6: [Job 3] arrived at [4], ran for: [2]
+t=8: [Job 1] arrived at [2], ran for: [2]
+t=10: [Job 2] arrived at [3], ran for: [2]
+t=12: [Job 3] arrived at [4], ran for: [2]
+t=14: [Job 1] arrived at [2], ran for: [1]
+t=15: [Job 2] arrived at [3], ran for: [2]
+t=17: [Job 2] arrived at [3], ran for: [2]
+t=19: [Job 2] arrived at [3], ran for: [2]
+t=21: [Job 2] arrived at [3], ran for: [1]
+End of execution with RR.

@@ -1,0 +1,7 @@
+Execution trace with FIFO:
+t=0: [Job 0] arrived at [0], ran for: [3]
+End of execution with FIFO.
+Begin analyzing FIFO:
+Job 0 -- Response time: 0  Turnaround: 3  Wait: 0
+Average -- Response: 0.00  Turnaround 3.00  Wait 0.00
+End analyzing FIFO.
