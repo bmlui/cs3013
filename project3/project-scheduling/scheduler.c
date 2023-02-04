@@ -11,6 +11,7 @@ struct job
   int id;
   int arrival;
   int length;
+  int done;
   struct job *next;
 };
 
@@ -32,6 +33,7 @@ void append(int id, int arrival, int length)
   tmp->id = id;
   tmp->length = length;
   tmp->arrival = arrival;
+  tmp->done = 0;
 
   // the new job is the last job
   tmp->next = NULL;
@@ -91,8 +93,7 @@ void read_workload_file(char *filename)
   return;
 }
 
-
-//FIFO policy
+// FIFO policy
 void policy_FIFO(struct job *head, int slice_duration)
 {
   // TODO: Fill this in
@@ -112,17 +113,57 @@ void analyze_FIFO(struct job *head)
   return;
 }
 
-//SJF policy
+// SJF policy
 void policy_SJF(struct job *head, int slice_duration)
 {
-  // TODO: Fill this in
-  printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, head->id, head->arrival, head->length);
-  slice_duration += head->length;
-  if (head->next != NULL)
+  int listCounter = 0;
+  struct job *tmp = head;
+  while (1 == 1)
   {
-    policy_FIFO(head->next, slice_duration);
+    if (tmp->next == NULL)
+    {
+      listCounter++;
+      break;
+    }
+    else
+    {
+      listCounter++;
+      tmp = tmp->next;
+    }
   }
-  return;
+
+  for (int j = 0; j < listCounter; j++)
+  {
+    struct job *tmp = head;
+    struct job *shortest = head;
+    while (1 == 1)
+    {
+      if (tmp->done == 0)
+      {
+        break;
+      }
+      else
+      {
+        tmp = tmp->next;
+        shortest = tmp;
+      }
+    }
+    while (1 == 1)
+    {
+      if ((tmp->length < shortest->length) && (tmp->done == 0))
+      {
+        shortest = tmp;
+      }
+      if (tmp->next == NULL)
+      {
+        break;
+      }
+      tmp = tmp->next;
+    }
+    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, shortest->id, shortest->arrival, shortest->length);
+    slice_duration += shortest->length;
+    shortest->done = 1;
+  }
 }
 
 void analyze_SJF(struct job *head)
