@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <string.h>
 #include <limits.h>
+#include <signal.h>
 
 // TODO: Add more fields to this struct
 struct job
@@ -135,33 +136,33 @@ void policy_SJF(struct job *head, int slice_duration)
   for (int j = 0; j < listCounter; j++)
   {
     struct job *tmp = head;
-    struct job *shortest = head;
+    struct job *shortest = malloc(sizeof(struct job));
+      shortest->id = -1;
+    shortest->arrival = INT_MAX;
+    shortest->length = INT_MAX;
+    shortest->done = 1;
+    shortest->next = NULL;
+    
     while (1 == 1)
     {
-      if (tmp->done == 0)
+      if ((tmp->length < shortest->length) && (tmp->done == 0) && (tmp->arrival <= slice_duration))
+      {
+        shortest = tmp;
+      }
+      if ((tmp->next == NULL) && (shortest->done == 0))
       {
         break;
-      }
-      else
+      } else if ((tmp->next == NULL) && (shortest->done == 1))
       {
+        slice_duration++;
+        tmp = head;
+      } else {
         tmp = tmp->next;
-        shortest = tmp;
       }
     }
-    while (1 == 1)
-    {
-      if ((tmp->length < shortest->length) && (tmp->done == 0))
-      {
-        shortest = tmp;
-      }
-      if (tmp->next == NULL)
-      {
-        break;
-      }
-      tmp = tmp->next;
-    }
+       
     printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, shortest->id, shortest->arrival, shortest->length);
-    slice_duration += shortest->length;
+ slice_duration += shortest->length;
     shortest->done = 1;
   }
 }
