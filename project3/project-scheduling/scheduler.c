@@ -14,6 +14,7 @@ struct job
   int length;
   int done;
   int time;
+  int timecompleted;
   struct job *next;
 };
 
@@ -100,6 +101,7 @@ void policy_FIFO(struct job *head, int time)
 {
   printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, head->id, head->arrival, head->length);
   head->time = time;
+  head->timecompleted = time + head->length;
   head->done = 1;
   time += head->length;
   if (head->next != NULL)
@@ -162,6 +164,7 @@ void policy_SJF(struct job *head)
 
     printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, shortest->id, shortest->arrival, shortest->length);
     shortest->time = time;
+    shortest->timecompleted = time + shortest->length;
     time += shortest->length;
     shortest->done = 1;
   }
@@ -208,6 +211,7 @@ void policy_RR(struct job *head, int slice_duration)
         jobsCompleted++;
       }
       tmp->done += timeRun;
+      tmp->timecompleted = time + timeRun;
       time += timeRun;
       jobsRunThisCycle++;
     }
@@ -238,10 +242,10 @@ void policy_RR(struct job *head, int slice_duration)
 void analyze_r(struct job *head, double *avgResponse, double *avgTurnaround, double *avgWait, int *counter)
 {
   *avgResponse += head->time - head->arrival;
-  *avgTurnaround += head->time + head->length - head->arrival;
-  *avgWait += head->time - head->arrival;
+  *avgTurnaround += head->timecompleted - head->arrival;
+  *avgWait += head->timecompleted - head->arrival - head->length;
   *counter += 1;
-  printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->time + head->length - head->arrival, head->time - head->arrival);
+  printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->timecompleted - head->arrival, head->timecompleted - head->arrival - head->length );
   if (head->next != NULL)
   {
     analyze_r(head->next, avgResponse, avgTurnaround, avgWait, counter);
