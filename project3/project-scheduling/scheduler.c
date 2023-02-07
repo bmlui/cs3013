@@ -175,7 +175,6 @@ void policy_RR(struct job *head, int slice_duration)
   struct job *tmp1 = head;
   while (1 == 1)
   {
-    //printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, tmp1->id, tmp1->arrival, tmp1->length);
     if (tmp1->next == NULL)
     {
       listCounter++;
@@ -189,10 +188,10 @@ void policy_RR(struct job *head, int slice_duration)
   }
   int jobsCompleted = 0;
   int jobsRunThisCycle = 0;
+  struct job *tmp = head;
   while (1 == 1)
   {
-    struct job *tmp = head;
-    if ((time <= tmp->arrival) && (tmp->done < tmp->length))
+    if ((time >= tmp->arrival) && (tmp->done < tmp->length))
     { // check if arrived and not done
       int timeRun = slice_duration;
       if ((tmp->length - tmp->done) < slice_duration)
@@ -214,7 +213,7 @@ void policy_RR(struct job *head, int slice_duration)
     }
     if (tmp->next == NULL)
     {
-      if (jobsCompleted == listCounter)
+      if (jobsCompleted >= listCounter)
       {
         break;
       }
@@ -222,6 +221,7 @@ void policy_RR(struct job *head, int slice_duration)
       {
         time++;
       }
+      jobsRunThisCycle = 0;
       tmp = head;
     }
     else
