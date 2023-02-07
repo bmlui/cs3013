@@ -245,7 +245,7 @@ void analyze_r(struct job *head, double *avgResponse, double *avgTurnaround, dou
   *avgTurnaround += head->timecompleted - head->arrival;
   *avgWait += head->timecompleted - head->arrival - head->length;
   *counter += 1;
-  printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->timecompleted - head->arrival, head->timecompleted - head->arrival - head->length );
+  printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->timecompleted - head->arrival, head->timecompleted - head->arrival - head->length);
   if (head->next != NULL)
   {
     analyze_r(head->next, avgResponse, avgTurnaround, avgWait, counter);
