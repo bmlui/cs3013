@@ -13,6 +13,7 @@ struct job
   int arrival;
   int length;
   int done;
+  int time;
   struct job *next;
 };
 
@@ -99,6 +100,8 @@ void policy_FIFO(struct job *head, int slice_duration)
 {
   // TODO: Fill this in
   printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, head->id, head->arrival, head->length);
+  head->time = slice_duration;
+  head->done = 1;
   slice_duration += head->length;
   if (head->next != NULL)
   {
@@ -109,8 +112,11 @@ void policy_FIFO(struct job *head, int slice_duration)
 
 void analyze_FIFO(struct job *head)
 {
-  // TODO: Fill this in
-
+  printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->time + head->length - head->arrival, head->time - head->arrival);
+  if (head->next != NULL)
+  {
+    analyze_FIFO(head->next);
+  }
   return;
 }
 
@@ -162,6 +168,7 @@ void policy_SJF(struct job *head, int slice_duration)
     }
        
     printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, shortest->id, shortest->arrival, shortest->length);
+    shortest->time = slice_duration;
  slice_duration += shortest->length;
     shortest->done = 1;
   }
@@ -169,8 +176,11 @@ void policy_SJF(struct job *head, int slice_duration)
 
 void analyze_SJF(struct job *head)
 {
-  // TODO: Fill this in
-
+ printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->time + head->length - head->arrival, head->time - head->arrival);
+  if (head->next != NULL)
+  {
+    analyze_SJF(head->next);
+  }
   return;
 }
 
@@ -196,6 +206,7 @@ int main(int argc, char **argv)
   // FIFO policy
   if (strcmp(policy, "FIFO") == 0)
   {
+    slice_duration = 0;
     printf("Execution trace with FIFO:\n");
     policy_FIFO(head, slice_duration);
     printf("End of execution with FIFO.\n");
@@ -203,6 +214,25 @@ int main(int argc, char **argv)
     {
       printf("Begin analyzing FIFO:\n");
       analyze_FIFO(head);
+      float avgResponse = 0;
+      float avgTurnaround = 0;
+      float avgWait = 0;
+      int counter = 0;
+      while (head != NULL)
+      {
+        avgResponse += head->time - head->arrival;
+        avgTurnaround += head->time + head->length - head->arrival;
+        avgWait += head->time - head->arrival;
+        counter++;
+        head = head->next;
+      }
+      if (counter != 0)
+      {
+        avgResponse = avgResponse / counter;
+        avgTurnaround = avgTurnaround / counter;
+        avgWait = avgWait / counter;
+      }
+      printf("Average -- Response: %.2f  Turnaround %.2f  Wait %.2f\n", avgResponse, avgTurnaround, avgWait);
       printf("End analyzing FIFO.\n");
     }
 
@@ -212,6 +242,7 @@ int main(int argc, char **argv)
   // SJF policy
   if (strcmp(policy, "SJF") == 0)
   {
+    slice_duration = 0;
     printf("Execution trace with SJF:\n");
     policy_SJF(head, slice_duration);
     printf("End of execution with SJF.\n");
@@ -219,6 +250,25 @@ int main(int argc, char **argv)
     {
       printf("Begin analyzing SJF:\n");
       analyze_SJF(head);
+      float avgResponse = 0;
+      float avgTurnaround = 0;
+      float avgWait = 0;
+      int counter = 0;
+      while (head != NULL)
+      {
+        avgResponse += head->time - head->arrival;
+        avgTurnaround += head->time + head->length - head->arrival;
+        avgWait += head->time - head->arrival;
+        counter++;
+        head = head->next;
+      }
+      if (counter != 0)
+      {
+        avgResponse = avgResponse / counter;
+        avgTurnaround = avgTurnaround / counter;
+        avgWait = avgWait / counter;
+      }
+      printf("Average -- Response: %.2f  Turnaround %.2f  Wait %.2f\n", avgResponse, avgTurnaround, avgWait);
       printf("End analyzing SJF.\n");
     }
 
