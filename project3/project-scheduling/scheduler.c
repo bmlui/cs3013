@@ -96,21 +96,21 @@ void read_workload_file(char *filename)
 }
 
 // FIFO policy
-void policy_FIFO(struct job *head, int slice_duration)
+void policy_FIFO(struct job *head, int time)
 {
-  printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, head->id, head->arrival, head->length);
-  head->time = slice_duration;
+  printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, head->id, head->arrival, head->length);
+  head->time = time;
   head->done = 1;
-  slice_duration += head->length;
+  time += head->length;
   if (head->next != NULL)
   {
-    policy_FIFO(head->next, slice_duration);
+    policy_FIFO(head->next, time);
   }
   return;
 }
 
 // SJF policy
-void policy_SJF(struct job *head, int slice_duration)
+void policy_SJF(struct job *head, int time)
 {
   int listCounter = 0;
   struct job *tmp = head;
@@ -140,7 +140,7 @@ void policy_SJF(struct job *head, int slice_duration)
 
     while (1 == 1)
     {
-      if ((tmp->length < shortest->length) && (tmp->done == 0) && (tmp->arrival <= slice_duration))
+      if ((tmp->length < shortest->length) && (tmp->done == 0) && (tmp->arrival <= time))
       {
         shortest = tmp;
       }
@@ -150,7 +150,7 @@ void policy_SJF(struct job *head, int slice_duration)
       }
       else if ((tmp->next == NULL) && (shortest->done == 1))
       {
-        slice_duration++;
+        time++;
         tmp = head;
       }
       else
@@ -159,9 +159,9 @@ void policy_SJF(struct job *head, int slice_duration)
       }
     }
 
-    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, shortest->id, shortest->arrival, shortest->length);
-    shortest->time = slice_duration;
-    slice_duration += shortest->length;
+    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, shortest->id, shortest->arrival, shortest->length);
+    shortest->time = time;
+    time += shortest->length;
     shortest->done = 1;
   }
 }
@@ -169,9 +169,10 @@ void policy_SJF(struct job *head, int slice_duration)
 // RR Policy
 void policy_RR(struct job *head, int slice_duration)
 {
- printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, head->id, head->arrival, head->length);
-  head->time = slice_duration;
-  head->done = 1;
+int time = 0;
+ printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, head->id, head->arrival, head->length);
+  head->time = time;
+  head->done = head->length;
   slice_duration += head->length;
   if (head->next != NULL)
   {
