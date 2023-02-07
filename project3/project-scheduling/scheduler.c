@@ -98,7 +98,6 @@ void read_workload_file(char *filename)
 // FIFO policy
 void policy_FIFO(struct job *head, int slice_duration)
 {
-  // TODO: Fill this in
   printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, head->id, head->arrival, head->length);
   head->time = slice_duration;
   head->done = 1;
@@ -109,37 +108,6 @@ void policy_FIFO(struct job *head, int slice_duration)
   }
   return;
 }
-
-void analyze_r(struct job *head, double *avgResponse, double *avgTurnaround, double *avgWait, int *counter)
-{
-  *avgResponse += head->time - head->arrival;
-  *avgTurnaround += head->time + head->length - head->arrival;
-  *avgWait += head->time - head->arrival;
-  *counter += 1;
-   printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->time + head->length - head->arrival, head->time - head->arrival);
-  if (head->next != NULL)
-  {
-    analyze_r(head->next, avgResponse, avgTurnaround, avgWait, counter);
-  }
-  return;
-}
-
-void analyze(struct job *head)
-{
-      double avgResponse = 0;
-      double avgTurnaround = 0;
-      double avgWait = 0;
-      int counter = 0;
-      analyze_r(head, &avgResponse, &avgTurnaround, &avgWait, &counter);
-      if (counter != 0)
-      {
-        avgResponse = avgResponse / counter;
-        avgTurnaround = avgTurnaround / counter;
-        avgWait = avgWait / counter;
-      }
-      printf("Average -- Response: %.2f  Turnaround %.2f  Wait %.2f\n", avgResponse, avgTurnaround, avgWait);
-}
-
 
 // SJF policy
 void policy_SJF(struct job *head, int slice_duration)
@@ -164,12 +132,12 @@ void policy_SJF(struct job *head, int slice_duration)
   {
     struct job *tmp = head;
     struct job *shortest = malloc(sizeof(struct job));
-      shortest->id = -1;
+    shortest->id = -1;
     shortest->arrival = INT_MAX;
     shortest->length = INT_MAX;
     shortest->done = 1;
     shortest->next = NULL;
-    
+
     while (1 == 1)
     {
       if ((tmp->length < shortest->length) && (tmp->done == 0) && (tmp->arrival <= slice_duration))
@@ -179,22 +147,71 @@ void policy_SJF(struct job *head, int slice_duration)
       if ((tmp->next == NULL) && (shortest->done == 0))
       {
         break;
-      } else if ((tmp->next == NULL) && (shortest->done == 1))
+      }
+      else if ((tmp->next == NULL) && (shortest->done == 1))
       {
         slice_duration++;
         tmp = head;
-      } else {
+      }
+      else
+      {
         tmp = tmp->next;
       }
     }
-       
+
     printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, shortest->id, shortest->arrival, shortest->length);
     shortest->time = slice_duration;
- slice_duration += shortest->length;
+    slice_duration += shortest->length;
     shortest->done = 1;
   }
 }
 
+// RR Policy
+void policy_RR(struct job *head, int slice_duration)
+{
+ printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", slice_duration, head->id, head->arrival, head->length);
+  head->time = slice_duration;
+  head->done = 1;
+  slice_duration += head->length;
+  if (head->next != NULL)
+  {
+    policy_FIFO(head->next, slice_duration);
+  }
+  return;
+}
+
+// Analysis functions
+//  analysis recursive fucntion
+void analyze_r(struct job *head, double *avgResponse, double *avgTurnaround, double *avgWait, int *counter)
+{
+  *avgResponse += head->time - head->arrival;
+  *avgTurnaround += head->time + head->length - head->arrival;
+  *avgWait += head->time - head->arrival;
+  *counter += 1;
+  printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->time + head->length - head->arrival, head->time - head->arrival);
+  if (head->next != NULL)
+  {
+    analyze_r(head->next, avgResponse, avgTurnaround, avgWait, counter);
+  }
+  return;
+}
+
+// analysis starter function
+void analyze(struct job *head)
+{
+  double avgResponse = 0;
+  double avgTurnaround = 0;
+  double avgWait = 0;
+  int counter = 0;
+  analyze_r(head, &avgResponse, &avgTurnaround, &avgWait, &counter);
+  if (counter != 0)
+  {
+    avgResponse = avgResponse / counter;
+    avgTurnaround = avgTurnaround / counter;
+    avgWait = avgWait / counter;
+  }
+  printf("Average -- Response: %.2f  Turnaround %.2f  Wait %.2f\n", avgResponse, avgTurnaround, avgWait);
+}
 
 int main(int argc, char **argv)
 {
@@ -249,7 +266,21 @@ int main(int argc, char **argv)
     exit(EXIT_SUCCESS);
   }
 
-  // TODO: Add other policies
+  // RR policy
+  if (strcmp(policy, "RR") == 0)
+  {
+    printf("Execution trace with RR:\n");
+    policy_RR(head, slice_duration);
+    printf("End of execution with RR.\n");
+    if (analysis)
+    {
+      printf("Begin analyzing RR:\n");
+      analyze(head);
+      printf("End analyzing RR.\n");
+    }
+
+    exit(EXIT_SUCCESS);
+  }
 
   exit(EXIT_SUCCESS);
 }
