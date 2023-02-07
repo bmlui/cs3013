@@ -170,15 +170,66 @@ void policy_SJF(struct job *head)
 // RR Policy
 void policy_RR(struct job *head, int slice_duration)
 {
-int time = 0;
- printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, head->id, head->arrival, head->length);
-  head->time = time;
-  head->done = head->length;
-  slice_duration += head->length;
-  if (head->next != NULL)
+  int time = 0;
+  int listCounter = 0;
+  struct job *tmp1 = head;
+  while (1 == 1)
   {
-    policy_FIFO(head->next, slice_duration);
+    //printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, tmp1->id, tmp1->arrival, tmp1->length);
+    if (tmp1->next == NULL)
+    {
+      listCounter++;
+      break;
+    }
+    else
+    {
+      listCounter++;
+      tmp1 = tmp1->next;
+    }
   }
+  int jobsCompleted = 0;
+  int jobsRunThisCycle = 0;
+  while (1 == 1)
+  {
+    struct job *tmp = head;
+    if ((time <= tmp->arrival) && (tmp->done < tmp->length))
+    { // check if arrived and not done
+      int timeRun = slice_duration;
+      if ((tmp->length - tmp->done) < slice_duration)
+      {
+        timeRun = tmp->length-tmp->done;
+      }
+      printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", time, tmp->id, tmp->arrival, timeRun);
+      if (tmp->done == 0)
+      {
+        tmp->time = time;
+      }
+      if (tmp->done + timeRun >= tmp->length)
+      {
+        jobsCompleted++;
+      }
+      tmp->done += timeRun;
+      time += timeRun;
+      jobsRunThisCycle++;
+    }
+    if (tmp->next == NULL)
+    {
+      if (jobsCompleted == listCounter)
+      {
+        break;
+      }
+      if (jobsRunThisCycle == 0)
+      {
+        time++;
+      }
+      tmp = head;
+    }
+    else
+    {
+      tmp = tmp->next;
+    }
+  }
+
   return;
 }
 
