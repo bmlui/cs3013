@@ -110,15 +110,36 @@ void policy_FIFO(struct job *head, int slice_duration)
   return;
 }
 
-void analyze_FIFO(struct job *head)
+void analyze_r(struct job *head, double *avgResponse, double *avgTurnaround, double *avgWait, int *counter)
 {
-  printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->time + head->length - head->arrival, head->time - head->arrival);
+  *avgResponse += head->time - head->arrival;
+  *avgTurnaround += head->time + head->length - head->arrival;
+  *avgWait += head->time - head->arrival;
+  *counter += 1;
+   printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->time + head->length - head->arrival, head->time - head->arrival);
   if (head->next != NULL)
   {
-    analyze_FIFO(head->next);
+    analyze_r(head->next, avgResponse, avgTurnaround, avgWait, counter);
   }
   return;
 }
+
+void analyze(struct job *head)
+{
+      double avgResponse = 0;
+      double avgTurnaround = 0;
+      double avgWait = 0;
+      int counter = 0;
+      analyze_r(head, &avgResponse, &avgTurnaround, &avgWait, &counter);
+      if (counter != 0)
+      {
+        avgResponse = avgResponse / counter;
+        avgTurnaround = avgTurnaround / counter;
+        avgWait = avgWait / counter;
+      }
+      printf("Average -- Response: %.2f  Turnaround %.2f  Wait %.2f\n", avgResponse, avgTurnaround, avgWait);
+}
+
 
 // SJF policy
 void policy_SJF(struct job *head, int slice_duration)
@@ -174,15 +195,6 @@ void policy_SJF(struct job *head, int slice_duration)
   }
 }
 
-void analyze_SJF(struct job *head)
-{
- printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", head->id, head->time - head->arrival, head->time + head->length - head->arrival, head->time - head->arrival);
-  if (head->next != NULL)
-  {
-    analyze_SJF(head->next);
-  }
-  return;
-}
 
 int main(int argc, char **argv)
 {
@@ -213,26 +225,7 @@ int main(int argc, char **argv)
     if (analysis)
     {
       printf("Begin analyzing FIFO:\n");
-      analyze_FIFO(head);
-      float avgResponse = 0;
-      float avgTurnaround = 0;
-      float avgWait = 0;
-      int counter = 0;
-      while (head != NULL)
-      {
-        avgResponse += head->time - head->arrival;
-        avgTurnaround += head->time + head->length - head->arrival;
-        avgWait += head->time - head->arrival;
-        counter++;
-        head = head->next;
-      }
-      if (counter != 0)
-      {
-        avgResponse = avgResponse / counter;
-        avgTurnaround = avgTurnaround / counter;
-        avgWait = avgWait / counter;
-      }
-      printf("Average -- Response: %.2f  Turnaround %.2f  Wait %.2f\n", avgResponse, avgTurnaround, avgWait);
+      analyze(head);
       printf("End analyzing FIFO.\n");
     }
 
@@ -249,26 +242,7 @@ int main(int argc, char **argv)
     if (analysis)
     {
       printf("Begin analyzing SJF:\n");
-      analyze_SJF(head);
-      float avgResponse = 0;
-      float avgTurnaround = 0;
-      float avgWait = 0;
-      int counter = 0;
-      while (head != NULL)
-      {
-        avgResponse += head->time - head->arrival;
-        avgTurnaround += head->time + head->length - head->arrival;
-        avgWait += head->time - head->arrival;
-        counter++;
-        head = head->next;
-      }
-      if (counter != 0)
-      {
-        avgResponse = avgResponse / counter;
-        avgTurnaround = avgTurnaround / counter;
-        avgWait = avgWait / counter;
-      }
-      printf("Average -- Response: %.2f  Turnaround %.2f  Wait %.2f\n", avgResponse, avgTurnaround, avgWait);
+      analyze(head);
       printf("End analyzing SJF.\n");
     }
 
