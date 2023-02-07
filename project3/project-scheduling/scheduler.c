@@ -110,8 +110,9 @@ void policy_FIFO(struct job *head, int time)
 }
 
 // SJF policy
-void policy_SJF(struct job *head, int time)
+void policy_SJF(struct job *head)
 {
+  int time = 0;
   int listCounter = 0;
   struct job *tmp = head;
   while (1 == 1)
@@ -236,9 +237,8 @@ int main(int argc, char **argv)
   // FIFO policy
   if (strcmp(policy, "FIFO") == 0)
   {
-    slice_duration = 0;
     printf("Execution trace with FIFO:\n");
-    policy_FIFO(head, slice_duration);
+    policy_FIFO(head, 0);
     printf("End of execution with FIFO.\n");
     if (analysis)
     {
@@ -253,9 +253,8 @@ int main(int argc, char **argv)
   // SJF policy
   if (strcmp(policy, "SJF") == 0)
   {
-    slice_duration = 0;
     printf("Execution trace with SJF:\n");
-    policy_SJF(head, slice_duration);
+    policy_SJF(head);
     printf("End of execution with SJF.\n");
     if (analysis)
     {
