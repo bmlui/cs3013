@@ -94,5 +94,6 @@ dkms.conf
 #Tests out by blui
 tests-out/
 *.zip
+a.out
 
 .vscode/
