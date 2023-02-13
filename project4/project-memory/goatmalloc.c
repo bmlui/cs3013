@@ -11,13 +11,13 @@
 #include <stddef.h>
 #include "goatmalloc.h"
 
-// The GOAT memory allocator 
+// The GOAT memory allocator
 
 node_t *_arena_start;
 
-int init(size_t size)
+int init(size_t size) // Initialize arena
 {
-    int fd = open("/dev/zero", O_RDWR); 
+    int fd = open("/dev/zero", O_RDWR);
     if (fd < 0)
     {
         perror("Error opening /dev/zero");
@@ -25,7 +25,7 @@ int init(size_t size)
     }
     if (size <= 0 || size >= MAX_ARENA_SIZE) // Check for invalid size, account for unsinged
     {
-        return ERR_BAD_ARGUMENTS; 
+        return ERR_BAD_ARGUMENTS;
     }
     int page_size = getpagesize();
     size = (size + page_size - 1) / page_size * page_size; // Round up to page size
@@ -38,7 +38,7 @@ int init(size_t size)
     printf("...mapping arena with mmap()\n");
 
     _arena_start = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0); // Map memory
-    if (_arena_start == MAP_FAILED)                                              // Check for error
+    if (_arena_start == MAP_FAILED)
     {
         return ERR_SYSCALL_FAILED; // Return error code
     }
@@ -52,7 +52,7 @@ int init(size_t size)
     return size;
 }
 
-int destroy()
+int destroy() // Destroy arena
 {
     if (_arena_start == NULL) // Check for uninitialized arena
     {
@@ -122,6 +122,35 @@ void wfree(void *ptr) // Free memory
     {
         if (current + 1 == ptr)
         {
+            if ((current->bwd != NULL && current->bwd->is_free) && (current->fwd != NULL && current->fwd->is_free)) // Merge with previous and next node if possible
+            {
+                current->bwd->size += current->size + current->fwd->size + 64;
+                current->bwd->fwd = current->fwd->fwd;
+                if (current->fwd->fwd != NULL)
+                {
+                    current->fwd->fwd->bwd = current->bwd;
+                }
+                current = current->bwd;
+            }
+            else if (current->bwd != NULL && current->bwd->is_free == 1) // Merge with previous node if possible
+            {
+                current->bwd->size += current->size + 32;
+                current->bwd->fwd = current->fwd;
+                if (current->fwd != NULL)
+                {
+                    current->fwd->bwd = current->bwd;
+                }
+                current = current->bwd;
+            }
+            else if (current->fwd != NULL && current->fwd->is_free == 1) // Merge with next node if possible
+            {
+                current->size += current->fwd->size + 32;
+                current->fwd = current->fwd->fwd;
+                if (current->fwd != NULL)
+                {
+                    current->fwd->bwd = current;
+                }
+            }
             current->is_free = 1;
             return;
         }
