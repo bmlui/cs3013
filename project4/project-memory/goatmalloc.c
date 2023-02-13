@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include "goatmalloc.h"
 
+// The GOAT memory allocator 
+
 node_t *_arena_start;
 
 int init(size_t size)
@@ -84,6 +86,16 @@ void *walloc(size_t size) // Allocate memory
     {
         if (current->is_free == 1 && current->size >= size)
         {
+            if (current->size >= size + 32) // Split node if possible
+            {
+                node_t *new = (node_t *)((char *)current + 32 + size);
+                new->size = current->size - size - 32;
+                new->is_free = 1;
+                new->fwd = current->fwd;
+                new->bwd = current;
+                current->fwd = new;
+                current->size = size;
+            }
             current->is_free = 0;
             return current + 1;
         }
