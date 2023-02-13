@@ -11,7 +11,7 @@
 #include <stddef.h>
 #include "goatmalloc.h"
 
-void *_arena_start;
+node_t *_arena_start;
 
 int init(size_t size)
 {
@@ -21,7 +21,7 @@ int init(size_t size)
         perror("Error opening /dev/zero");
         return ERR_CALL_FAILED;
     }
-    if (size <= 0 || size >= MAX_ARENA_SIZE) // Check for invalid size, account for unsinged  
+    if (size <= 0 || size >= MAX_ARENA_SIZE) // Check for invalid size, account for unsinged
     {
         return ERR_BAD_ARGUMENTS; // Return error code
     }
@@ -36,13 +36,16 @@ int init(size_t size)
     printf("...mapping arena with mmap()\n");
 
     _arena_start = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0); // Map memory
-    if (_arena_start == MAP_FAILED) // Check for error
+    if (_arena_start == MAP_FAILED)                                              // Check for error
     {
         return ERR_SYSCALL_FAILED; // Return error code
     }
-
     printf("...arena starts at %p\n...arena ends at %p\n", _arena_start, (char *)_arena_start + size);
     printf("...initializing header for initial free chunk\n...header size is 32 bytes\n");
+    _arena_start->size = size - 32;
+    _arena_start->is_free = 1;
+    _arena_start->fwd = NULL;
+    _arena_start->bwd = NULL;
 
     return size;
 }
@@ -59,27 +62,25 @@ int destroy()
         return ERR_SYSCALL_FAILED;
     }
     _arena_start = NULL; // set arena to NULL
-    printf("Destroying Arena:\n...unmapping arena with munmap()\n"); 
+    printf("Destroying Arena:\n...unmapping arena with munmap()\n");
     return result;
 }
 
 int statusno;
-void* walloc(size_t size)
+void *walloc(size_t size)
 {
     if (_arena_start == NULL) // Check for uninitialized arena
     {
-          statusno = ERR_UNINITIALIZED;
-          return NULL;
-         
-    }
-    if (size <= 0 || size >= MAX_ARENA_SIZE) // Check for invalid size, account for unsinged  
-    {
-         statusno = ERR_BAD_ARGUMENTS; // Return error code
+        statusno = ERR_UNINITIALIZED;
         return NULL;
-       
     }
-   // int page_size = getpagesize();
-    //size = (size + page_size - 1) / page_size * page_size; // Round up to page size
+    if (size <= 0 || size >= MAX_ARENA_SIZE) // Check for invalid size, account for unsinged
+    {
+        statusno = ERR_BAD_ARGUMENTS; // Return error code
+        return NULL;
+    }
+    // int page_size = getpagesize();
+    // size = (size + page_size - 1) / page_size * page_size; // Round up to page size
     node_t *current = _arena_start;
     while (current != NULL)
     {
