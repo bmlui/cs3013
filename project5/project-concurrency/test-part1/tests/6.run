@@ -1,0 +1,1 @@
+valgrind -q ./scan tests/6.in 16 4

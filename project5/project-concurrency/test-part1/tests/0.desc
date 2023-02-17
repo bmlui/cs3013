@@ -1,0 +1,1 @@
+Ensure the program compiles without warnings, and that it requires the pthread library.

@@ -1,0 +1,1 @@
+./tests/0.sh && gcc -g -Wall -Werror -o scan ../scan.c -lpthread -lm -g

@@ -1,0 +1,1 @@
+valgrind -q timeout -s SIGKILL 1m tests/12.sh 
