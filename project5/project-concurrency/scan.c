@@ -7,53 +7,67 @@
 #include <string.h>
 #include <stddef.h>
 
+sem_t sem;
+
 // The read_input_vector function is from the serial soliton as allowed per the project instructions
 #define MAX_LINE_SIZE 256
-void read_input_vector(const char *filename, int n, int *array)
+void read_input_vector(const char* filename, int n, int* array)
 {
-    FILE *fp;
-    char *line = malloc(MAX_LINE_SIZE + 1);
-    size_t len = MAX_LINE_SIZE;
-    ssize_t read;
+  FILE *fp;
+  char *line = malloc(MAX_LINE_SIZE+1);
+  size_t len = MAX_LINE_SIZE;
+  ssize_t read;
 
-    fp = strcmp(filename, "-") ? fopen(filename, "r") : stdin;
+  fp = strcmp(filename, "-") ? fopen(filename, "r") : stdin;
 
-    assert(fp != NULL && line != NULL);
+  assert(fp != NULL && line != NULL);
 
-    int index = 0;
+  int index = 0;
 
-    while ((read = getline(&line, &len, fp)) != -1)
-    {
-        array[index] = atoi(line);
-        index++;
-    }
+  while ((read = getline(&line, &len, fp)) != -1)
+  {
+    array[index] = atoi(line);
+    index++;
+  }
 
-    free(line);
-    fclose(fp);
+  free(line);
+  fclose(fp);
 }
 
 struct thread_arg {
     int *input;
     int *output;
-    int start;
-    int end;
-    size_t size;
-    sem_t *sem;
+    int myLinesCount;
+    int startLineIndex;
+    int endLineIndex;
+    int pScanTimes;
 };
 
 void * compute(void * arg) {
-    struct thread_arg *args = (struct thread_arg *)arg;
-    int *input = args->input;
-    int *output = args->output;
-    int start = args->start;
-    int end = args->end;
-    size_t size = args->size;
-    sem_t *sem = args->sem;
-    for (int i = start; i < end; i++)
-    {
-        output[i] = input[i] + ((i == 0) ? 0 : output[i - 1]);
+   struct thread_arg *t_arg = (struct thread_arg *) arg;
+   int *input = t_arg->input;
+    int *output = t_arg->output;
+   int myLinesCount = t_arg->myLinesCount;
+   int startLineIndex = t_arg->startLineIndex;
+    int endLineIndex = t_arg->endLineIndex;
+    int pScanTimes = t_arg->pScanTimes;
+
+    for (int i = 0; i < pScanTimes; i++) {
+        // check condiiton lock 
+        for (int j = startLineIndex; j < endLineIndex; j++) {
+            if (j >= (int)pow(2, i)) {
+                output[j] = input[j-(int)pow(2, i)] + input[j];
+            } else {
+                output[j] = input[j];
+            }
+        }
+       // critical section 
+        memcpy(input, output, sizeof(int) * myLinesCount);
+    
     }
-    return NULL;
+
+
+   
 }
 
 
@@ -70,10 +84,11 @@ int main(int argc, char *argv[])
     // Set vars
     char *filename = argv[1];
     int lines = atoi(argv[2]);
-    int threads = atoi(argv[3]);
+    int numThreads = atoi(argv[3]);
+    int threadLines = (int)ceil((double)lines / numThreads);
 
     // Check for invalid input
-    if (lines < 2 || threads < 1)
+    if (lines < 2 || numThreads < 1)
     {
         exit(EXIT_FAILURE);
     }
@@ -82,44 +97,54 @@ int main(int argc, char *argv[])
     int *input = malloc(sizeof(int) * lines);
     read_input_vector(filename, lines, input); // The read_input_vector function is from the serial soliton per the project instructions
     int *output = malloc(sizeof(int) * lines);
+
     // Initialize output
     for (int i = 0; i < lines; i++)
     {
         output[i] = 0;
     }
 
-     // Create threads
-    pthread_t thread[threads];
-    struct thread_arg *thread_args = malloc(sizeof(struct thread_arg) * threads);
-    int chunk_size = lines / threads;
-    for (int i = 0; i < threads; i++)
-    {
-        int start = i * chunk_size;
-        int end = (i == threads - 1) ? lines : (i + 1) * chunk_size;
-        thread_args[i].input = input;
-        thread_args[i].output = output;
-        thread_args[i].start = start;
-        thread_args[i].end = end;
-        pthread_create(&thread[i], NULL, compute, (void *)&thread_args[i]);
+    // Initialize threads
+    pthread_t threads[numThreads];
+    struct thread_arg t_args[numThreads];
+   
+    for (int i = 0; i < lines; i++) {
+    t_args[i].input = input;
+    t_args[i].output = output;
+    t_args[i].myLinesCount = threadLines;
+    t_args[i].startLineIndex = i * threadLines;
+    t_args[i].endLineIndex = (i + 1) * threadLines;
+    t_args[i].pScanTimes = (int)floor(log2(lines));
+    pthread_create(&threads[i], NULL, compute, (void *) &t_args[i]);
     }
 
     // Wait for threads to finish
-    for (int i = 0; i < threads; i++)
-    {
-        pthread_join(thread[i], NULL);
+    for (int i = 0; i < numThreads; i++) {
+        pthread_join(threads[i], NULL);
     }
 
 
-// Print output
-    for (int i = 0; i < lines; i++)
-    {
+    /* Non thread version
+    int pScanTimes = (int)floor(log2(lines));
+    for (int i = 0; i < pScanTimes; i++) {
+        for (int j = (int)pow(2, i)-1; j < lines; j++) {
+            if (j >= (int)pow(2, i)) {
+                output[j] = input[j-(int)pow(2, i)] + input[j];
+            } else {
+                output[j] = input[j];
+            }
+        }
+        memcpy(input, output, sizeof(int) * lines); // Copy partial scan to input, so that it can be used in the next iteration
+    }*/
+
+    // Print output
+    for (int i = 0; i < lines; i++) {
         printf("%d\n", output[i]);
-
     }
 
-        // Clean up
+    // Clean up
     free(input);
     free(output);
-    free(thread_args);
-   
+
+    return 0;
 }
