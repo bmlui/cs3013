@@ -4,15 +4,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <limits.h>
-#include <signal.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <fcntl.h>
 #include <stddef.h>
-#include <sys/types.h>
 
 // The read_input_vector function is from the serial soliton as allowed per the project instructions
 #define MAX_LINE_SIZE 256
@@ -39,6 +32,32 @@ void read_input_vector(const char *filename, int n, int *array)
     fclose(fp);
 }
 
+struct thread_arg {
+    int *input;
+    int *output;
+    int start;
+    int end;
+    size_t size;
+    sem_t *sem;
+};
+
+void * compute(void * arg) {
+    struct thread_arg *args = (struct thread_arg *)arg;
+    int *input = args->input;
+    int *output = args->output;
+    int start = args->start;
+    int end = args->end;
+    size_t size = args->size;
+    sem_t *sem = args->sem;
+    for (int i = start; i < end; i++)
+    {
+        output[i] = input[i] + ((i == 0) ? 0 : output[i - 1]);
+    }
+    return NULL;
+}
+
+
+
 int main(int argc, char *argv[])
 {
     // Check for correct number of arguments
@@ -53,7 +72,7 @@ int main(int argc, char *argv[])
     int lines = atoi(argv[2]);
     int threads = atoi(argv[3]);
 
-    // Check for valid input
+    // Check for invalid input
     if (lines < 2 || threads < 1)
     {
         exit(EXIT_FAILURE);
@@ -63,13 +82,44 @@ int main(int argc, char *argv[])
     int *input = malloc(sizeof(int) * lines);
     read_input_vector(filename, lines, input); // The read_input_vector function is from the serial soliton per the project instructions
     int *output = malloc(sizeof(int) * lines);
+    // Initialize output
+    for (int i = 0; i < lines; i++)
+    {
+        output[i] = 0;
+    }
+
+     // Create threads
+    pthread_t thread[threads];
+    struct thread_arg *thread_args = malloc(sizeof(struct thread_arg) * threads);
+    int chunk_size = lines / threads;
+    for (int i = 0; i < threads; i++)
+    {
+        int start = i * chunk_size;
+        int end = (i == threads - 1) ? lines : (i + 1) * chunk_size;
+        thread_args[i].input = input;
+        thread_args[i].output = output;
+        thread_args[i].start = start;
+        thread_args[i].end = end;
+        pthread_create(&thread[i], NULL, compute, (void *)&thread_args[i]);
+    }
+
+    // Wait for threads to finish
+    for (int i = 0; i < threads; i++)
+    {
+        pthread_join(thread[i], NULL);
+    }
 
 
-    // Create threads
-    pthread_t *thread = malloc(sizeof(pthread_t) * threads);
-    int *thread_id = malloc(sizeof(int) * threads);
+// Print output
+    for (int i = 0; i < lines; i++)
+    {
+        printf("%d\n", output[i]);
 
+    }
 
-
-
+        // Clean up
+    free(input);
+    free(output);
+    free(thread_args);
+   
 }
