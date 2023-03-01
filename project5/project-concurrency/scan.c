@@ -118,6 +118,8 @@ int main(int argc, char *argv[])
     }
     // Initialize threads
     sem_init(&sem, 0, numThreads);
+    countMutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(countMutex, NULL);
     pthread_t threads[numThreads];
     struct thread_arg t_args[numThreads];
 
@@ -138,6 +140,7 @@ int main(int argc, char *argv[])
     }
 
     sem_destroy(&sem);
+    pthread_mutex_destroy(countMutex);
 
     /* Non thread version
     int pScanTimes = (int)floor(log2(lines));
@@ -160,6 +163,7 @@ int main(int argc, char *argv[])
     // Clean up
     free(input);
     free(output);
+    free(countMutex);
 
     return 0;
 }
