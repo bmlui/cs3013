@@ -43,6 +43,7 @@ struct thread_arg {
     int pScanTimes;
     int numThreads;
 };
+pthread_mutex_t * countMutex;
 int count = 0;
 void * compute(void * arg) {
    struct thread_arg *t_arg = (struct thread_arg *) arg;
@@ -63,13 +64,20 @@ void * compute(void * arg) {
                 output[j] = input[j];
             }
         }
-        sem_wait(&sem);
-        count++;
-        sem_post(&sem);
-        while (count < threads){
-            //wait
-        };
-        memcpy(input, output, sizeof(int) * myLinesCount);
+
+        
+            // Wait for all threads to complete this stage
+        pthread_mutex_lock(countMutex);
+        (count)++;
+        if (count == threads) {
+            pthread_mutex_unlock(countMutex);
+            sem_post(&sem);
+        } else {
+            pthread_mutex_unlock(countMutex);
+            sem_wait(&sem);
+        }
+
+        memcpy(input + startLineIndex, output + startLineIndex, sizeof(int) * myLinesCount);
     }
 
    return NULL;
@@ -109,9 +117,10 @@ int main(int argc, char *argv[])
         output[i] = 0;
     }
     // Initialize threads
+    sem_init(&sem, 0, numThreads);
     pthread_t threads[numThreads];
     struct thread_arg t_args[numThreads];
-    sem_init(&sem, 0, 1);
+
     for (int i = 0; i < numThreads; i++) {
     t_args[i].input = input;
     t_args[i].output = output;
