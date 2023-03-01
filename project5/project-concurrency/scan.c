@@ -41,8 +41,9 @@ struct thread_arg {
     int startLineIndex;
     int endLineIndex;
     int pScanTimes;
+    int numThreads;
 };
-
+int count = 0;
 void * compute(void * arg) {
    struct thread_arg *t_arg = (struct thread_arg *) arg;
    int *input = t_arg->input;
@@ -51,9 +52,9 @@ void * compute(void * arg) {
    int startLineIndex = t_arg->startLineIndex;
     int endLineIndex = t_arg->endLineIndex;
     int pScanTimes = t_arg->pScanTimes;
+    int threads = t_arg->numThreads;
 
     for (int i = 0; i < pScanTimes; i++) {
-        // check condiiton lock 
         for (int j = startLineIndex; j < endLineIndex; j++) {
             if (j >= (int)pow(2, i)) {
                 output[j] = input[j-(int)pow(2, i)] + input[j];
@@ -61,13 +62,17 @@ void * compute(void * arg) {
                 output[j] = input[j];
             }
         }
-       // critical section 
+        sem_wait(&sem);
+        count++;
+        sem_post(&sem);
+        while (count < threads){
+            //wait
+        };
+        count = 0;
         memcpy(input, output, sizeof(int) * myLinesCount);
-    
     }
 
-
-   
+   return NULL;
 }
 
 
@@ -80,6 +85,7 @@ int main(int argc, char *argv[])
         printf("Usage: %s <filename> <number of lines in the file> <number of threads to use>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
+printf("args: %s %s %s", argv[1], argv[2], argv[3]);
 
     // Set vars
     char *filename = argv[1];
@@ -103,18 +109,18 @@ int main(int argc, char *argv[])
     {
         output[i] = 0;
     }
-
     // Initialize threads
     pthread_t threads[numThreads];
     struct thread_arg t_args[numThreads];
-   
-    for (int i = 0; i < lines; i++) {
+    sem_init(&sem, 0, 1);
+    for (int i = 0; i < numThreads; i++) {
     t_args[i].input = input;
     t_args[i].output = output;
     t_args[i].myLinesCount = threadLines;
     t_args[i].startLineIndex = i * threadLines;
     t_args[i].endLineIndex = (i + 1) * threadLines;
     t_args[i].pScanTimes = (int)floor(log2(lines));
+    t_args[i].numThreads = numThreads;
     pthread_create(&threads[i], NULL, compute, (void *) &t_args[i]);
     }
 
@@ -123,6 +129,7 @@ int main(int argc, char *argv[])
         pthread_join(threads[i], NULL);
     }
 
+    sem_destroy(&sem);
 
     /* Non thread version
     int pScanTimes = (int)floor(log2(lines));
