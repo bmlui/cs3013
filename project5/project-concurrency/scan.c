@@ -43,8 +43,8 @@ struct thread_arg {
     int pScanTimes;
     int numThreads;
 };
-pthread_mutex_t * countMutex;
-int count = 0;
+
+
 void * compute(void * arg) {
    struct thread_arg *t_arg = (struct thread_arg *) arg;
    int *input = t_arg->input;
@@ -53,10 +53,10 @@ void * compute(void * arg) {
    int startLineIndex = t_arg->startLineIndex;
     int endLineIndex = t_arg->endLineIndex;
     int pScanTimes = t_arg->pScanTimes;
-    int threads = t_arg->numThreads;
+ //   int threads = t_arg->numThreads;
 
     for (int i = 0; i < pScanTimes; i++) {
-        count = 0;
+       
         for (int j = startLineIndex; j < endLineIndex; j++) {
             if (j >= (int)pow(2, i)) {
                 output[j] = input[j-(int)pow(2, i)] + input[j];
@@ -64,19 +64,8 @@ void * compute(void * arg) {
                 output[j] = input[j];
             }
         }
-
-        
             // Wait for all threads to complete this stage
-        pthread_mutex_lock(countMutex);
-        (count)++;
-        if (count == threads) {
-            pthread_mutex_unlock(countMutex);
-            sem_post(&sem);
-        } else {
-            pthread_mutex_unlock(countMutex);
-            sem_wait(&sem);
-        }
-
+       
         memcpy(input + startLineIndex, output + startLineIndex, sizeof(int) * myLinesCount);
     }
 
@@ -98,7 +87,9 @@ int main(int argc, char *argv[])
     char *filename = argv[1];
     int lines = atoi(argv[2]);
     int numThreads = atoi(argv[3]);
-    int threadLines = (int)ceil((double)lines / numThreads);
+    int threadLines = (int) ((double)lines / numThreads);
+    int remainder = lines % numThreads;
+
 
     // Check for invalid input
     if (lines < 2 || numThreads < 1)
@@ -128,7 +119,12 @@ int main(int argc, char *argv[])
     t_args[i].output = output;
     t_args[i].myLinesCount = threadLines;
     t_args[i].startLineIndex = i * threadLines;
-    t_args[i].endLineIndex = (i + 1) * threadLines;
+    if (i == numThreads - 1) {
+        t_args[i].myLinesCount += remainder;
+        t_args[i].endLineIndex = lines;
+    } else {
+        t_args[i].endLineIndex = (i + 1) * threadLines;
+    }
     t_args[i].pScanTimes = (int)floor(log2(lines));
     t_args[i].numThreads = numThreads;
     pthread_create(&threads[i], NULL, compute, (void *) &t_args[i]);
@@ -141,6 +137,7 @@ int main(int argc, char *argv[])
 
     sem_destroy(&sem);
     pthread_mutex_destroy(countMutex);
+
 
     /* Non thread version
     int pScanTimes = (int)floor(log2(lines));
@@ -163,7 +160,11 @@ int main(int argc, char *argv[])
     // Clean up
     free(input);
     free(output);
+<<<<<<< HEAD
+  
+=======
     free(countMutex);
 
+>>>>>>> refs/remotes/origin/main
     return 0;
 }
