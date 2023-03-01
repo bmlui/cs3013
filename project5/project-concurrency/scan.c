@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
+#include <unistd.h>
 
-sem_t sem;
 
 // The read_input_vector function is from the serial soliton as allowed per the project instructions
 #define MAX_LINE_SIZE 256
@@ -42,9 +42,14 @@ struct thread_arg {
     int endLineIndex;
     int pScanTimes;
     int numThreads;
+    sem_t mutex;
+    sem_t barrier;
+    sem_t barrier2;
 };
-
-
+sem_t mutex;
+sem_t barrier;
+sem_t barrier2;
+int count = 0;
 void * compute(void * arg) {
    struct thread_arg *t_arg = (struct thread_arg *) arg;
    int *input = t_arg->input;
@@ -53,7 +58,7 @@ void * compute(void * arg) {
    int startLineIndex = t_arg->startLineIndex;
     int endLineIndex = t_arg->endLineIndex;
     int pScanTimes = t_arg->pScanTimes;
- //   int threads = t_arg->numThreads;
+   int threads = t_arg->numThreads;
 
     for (int i = 0; i < pScanTimes; i++) {
        
@@ -64,9 +69,34 @@ void * compute(void * arg) {
                 output[j] = input[j];
             }
         }
-            // Wait for all threads to complete this stage
-       
-        memcpy(input + startLineIndex, output + startLineIndex, sizeof(int) * myLinesCount);
+
+        //implement barrier 
+        sem_wait(&mutex);
+        count++;
+        if (count == threads) {
+            sem_wait(&barrier2);
+            sem_post(&barrier);
+        } 
+        sem_post(&mutex);
+
+        sem_wait(&barrier);
+        sem_post(&barrier);
+
+        //swap input and output
+        memcpy(input + startLineIndex, output + startLineIndex, sizeof(int) * myLinesCount); // critical section
+
+        //implement barrier
+        sem_wait(&mutex);
+        count--;
+        if (count == 0) {
+            sem_wait(&barrier);
+            sem_post(&barrier2);
+        }
+        sem_post(&mutex);
+
+        sem_wait(&barrier2);
+        sem_post(&barrier2);
+
     }
 
    return NULL;
@@ -108,9 +138,9 @@ int main(int argc, char *argv[])
         output[i] = 0;
     }
     // Initialize threads
-    sem_init(&sem, 0, numThreads);
-    countMutex = malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(countMutex, NULL);
+    sem_init(&mutex, 0, 1);
+    sem_init(&barrier, 0, 0);
+    sem_init(&barrier2, 0, 1);
     pthread_t threads[numThreads];
     struct thread_arg t_args[numThreads];
 
@@ -127,6 +157,9 @@ int main(int argc, char *argv[])
     }
     t_args[i].pScanTimes = (int)floor(log2(lines));
     t_args[i].numThreads = numThreads;
+    t_args[i].mutex = mutex;
+    t_args[i].barrier = barrier;
+    t_args[i].barrier2 = barrier2;
     pthread_create(&threads[i], NULL, compute, (void *) &t_args[i]);
     }
 
@@ -135,8 +168,8 @@ int main(int argc, char *argv[])
         pthread_join(threads[i], NULL);
     }
 
-    sem_destroy(&sem);
-    pthread_mutex_destroy(countMutex);
+    sem_destroy(&mutex);
+    sem_destroy(&barrier);
 
 
     /* Non thread version
@@ -160,11 +193,6 @@ int main(int argc, char *argv[])
     // Clean up
     free(input);
     free(output);
-<<<<<<< HEAD
   
-=======
-    free(countMutex);
-
->>>>>>> refs/remotes/origin/main
     return 0;
 }
