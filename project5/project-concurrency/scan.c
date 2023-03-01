@@ -55,6 +55,7 @@ void * compute(void * arg) {
     int threads = t_arg->numThreads;
 
     for (int i = 0; i < pScanTimes; i++) {
+        count = 0;
         for (int j = startLineIndex; j < endLineIndex; j++) {
             if (j >= (int)pow(2, i)) {
                 output[j] = input[j-(int)pow(2, i)] + input[j];
@@ -68,7 +69,6 @@ void * compute(void * arg) {
         while (count < threads){
             //wait
         };
-        count = 0;
         memcpy(input, output, sizeof(int) * myLinesCount);
     }
 
@@ -85,7 +85,6 @@ int main(int argc, char *argv[])
         printf("Usage: %s <filename> <number of lines in the file> <number of threads to use>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
-printf("args: %s %s %s", argv[1], argv[2], argv[3]);
 
     // Set vars
     char *filename = argv[1];
